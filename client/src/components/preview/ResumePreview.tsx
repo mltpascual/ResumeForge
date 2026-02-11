@@ -1,8 +1,9 @@
-/*
- * Resume Preview Templates with section order + accent color + font pairing support
+/**
+ * Resume Preview Templates with section order + accent color + font pairing + font size support
  * Templates: Classic, Modern, Executive, Compact, Minimal, TwoColumn
  * Skills rendered as comma-delimited text.
  * All use inline styles for PDF export fidelity.
+ * Font size scaling via s(basePx, scale) helper.
  */
 
 import { useResume, type SectionId } from '@/contexts/ResumeContext';
@@ -33,11 +34,17 @@ function lightenColor(hex: string, amount: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+/** Scale a base px size by the fontSize factor */
+function sz(base: number, scale: number): string {
+  return `${(base * scale).toFixed(1)}px`;
+}
+
 interface TemplateProps {
   data: ResumeData;
   sectionOrder: SectionId[];
   accent: string;
   font: FontPairing;
+  fontSize: number;
 }
 
 interface SectionColors {
@@ -63,7 +70,15 @@ const emptyState = (
 
 // ============ SECTION RENDERERS ============
 
-function ExperienceSection({ data, colors, headingStyle, font }: { data: ResumeData; colors: SectionColors; headingStyle: React.CSSProperties; font: FontPairing }) {
+interface SectionRendererProps {
+  data: ResumeData;
+  colors: SectionColors;
+  headingStyle: React.CSSProperties;
+  font: FontPairing;
+  fs: number;
+}
+
+function ExperienceSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
   if (data.experiences.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -71,22 +86,22 @@ function ExperienceSection({ data, colors, headingStyle, font }: { data: ResumeD
       {data.experiences.map(exp => (
         <div key={exp.id} style={{ marginBottom: '14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <h3 style={{ fontFamily: font.heading, fontSize: '13px', fontWeight: 600, color: colors.black }}>{exp.position}</h3>
-            <span style={{ fontSize: '10px', color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
+            <h3 style={{ fontFamily: font.heading, fontSize: sz(13, fs), fontWeight: 600, color: colors.black }}>{exp.position}</h3>
+            <span style={{ fontSize: sz(10, fs), color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
               {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
             </span>
           </div>
-          <p style={{ fontSize: '11px', color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
+          <p style={{ fontSize: sz(11, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
             {exp.company}{exp.location ? ` · ${exp.location}` : ''}
           </p>
-          {exp.description && <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+          {exp.description && <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
         </div>
       ))}
     </div>
   );
 }
 
-function EducationSection({ data, colors, headingStyle, font }: { data: ResumeData; colors: SectionColors; headingStyle: React.CSSProperties; font: FontPairing }) {
+function EducationSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
   if (data.education.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -94,46 +109,46 @@ function EducationSection({ data, colors, headingStyle, font }: { data: ResumeDa
       {data.education.map(edu => (
         <div key={edu.id} style={{ marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <h3 style={{ fontFamily: font.heading, fontSize: '12px', fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
-            <span style={{ fontSize: '10px', color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
+            <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
+            <span style={{ fontSize: sz(10, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
           </div>
-          <p style={{ fontSize: '11px', color: colors.body, fontFamily: font.body }}>
+          <p style={{ fontSize: sz(11, fs), color: colors.body, fontFamily: font.body }}>
             {edu.degree}{edu.field ? ` in ${edu.field}` : ''}{edu.gpa ? ` · GPA: ${edu.gpa}` : ''}
           </p>
-          {edu.description && <p style={{ fontSize: '10.5px', color: colors.muted, fontFamily: font.body }}>{edu.description}</p>}
+          {edu.description && <p style={{ fontSize: sz(10.5, fs), color: colors.muted, fontFamily: font.body }}>{edu.description}</p>}
         </div>
       ))}
     </div>
   );
 }
 
-function SkillsSection({ data, colors, headingStyle, font }: { data: ResumeData; colors: SectionColors; headingStyle: React.CSSProperties; font: FontPairing }) {
+function SkillsSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
   if (!data.skills || !data.skills.trim()) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
       <h2 style={headingStyle}>Skills</h2>
-      <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
+      <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
     </div>
   );
 }
 
-function ProjectsSection({ data, colors, headingStyle, font }: { data: ResumeData; colors: SectionColors; headingStyle: React.CSSProperties; font: FontPairing }) {
+function ProjectsSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
   if (data.projects.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
       <h2 style={headingStyle}>Projects</h2>
       {data.projects.map(proj => (
         <div key={proj.id} style={{ marginBottom: '10px' }}>
-          <h3 style={{ fontFamily: font.heading, fontSize: '12px', fontWeight: 600, color: colors.black }}>{proj.name}</h3>
-          {proj.technologies && <p style={{ fontSize: '10px', color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-          {proj.description && <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{proj.description}</p>}
+          <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
+          {proj.technologies && <p style={{ fontSize: sz(10, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
+          {proj.description && <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{proj.description}</p>}
         </div>
       ))}
     </div>
   );
 }
 
-function CertificationsSection({ data, colors, headingStyle, font }: { data: ResumeData; colors: SectionColors; headingStyle: React.CSSProperties; font: FontPairing }) {
+function CertificationsSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
   if (data.certifications.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -141,35 +156,35 @@ function CertificationsSection({ data, colors, headingStyle, font }: { data: Res
       {data.certifications.map(cert => (
         <div key={cert.id} style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div>
-            <span style={{ fontSize: '11px', fontWeight: 500, color: colors.black, fontFamily: font.body }}>{cert.name}</span>
-            {cert.issuer && <span style={{ fontSize: '10.5px', color: colors.muted, fontFamily: font.body }}> — {cert.issuer}</span>}
+            <span style={{ fontSize: sz(11, fs), fontWeight: 500, color: colors.black, fontFamily: font.body }}>{cert.name}</span>
+            {cert.issuer && <span style={{ fontSize: sz(10.5, fs), color: colors.muted, fontFamily: font.body }}> — {cert.issuer}</span>}
           </div>
-          {cert.date && <span style={{ fontSize: '10px', color: colors.muted, fontFamily: font.mono }}>{cert.date}</span>}
+          {cert.date && <span style={{ fontSize: sz(10, fs), color: colors.muted, fontFamily: font.mono }}>{cert.date}</span>}
         </div>
       ))}
     </div>
   );
 }
 
-function renderOrderedSections(data: ResumeData, order: SectionId[], colors: SectionColors, headingStyle: React.CSSProperties, font: FontPairing) {
+function renderOrderedSections(data: ResumeData, order: SectionId[], colors: SectionColors, headingStyle: React.CSSProperties, font: FontPairing, fs: number) {
   const sectionMap: Record<SectionId, React.ReactNode> = {
-    experiences: <ExperienceSection key="experiences" data={data} colors={colors} headingStyle={headingStyle} font={font} />,
-    education: <EducationSection key="education" data={data} colors={colors} headingStyle={headingStyle} font={font} />,
-    skills: <SkillsSection key="skills" data={data} colors={colors} headingStyle={headingStyle} font={font} />,
-    projects: <ProjectsSection key="projects" data={data} colors={colors} headingStyle={headingStyle} font={font} />,
-    certifications: <CertificationsSection key="certifications" data={data} colors={colors} headingStyle={headingStyle} font={font} />,
+    experiences: <ExperienceSection key="experiences" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
+    education: <EducationSection key="education" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
+    skills: <SkillsSection key="skills" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
+    projects: <ProjectsSection key="projects" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
+    certifications: <CertificationsSection key="certifications" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
   };
   return order.map(id => sectionMap[id]);
 }
 
 // ============ 1. CLASSIC TEMPLATE ============
-function ClassicTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
+function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
   const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
   const headingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: '11px', fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(11, fs), fontWeight: 700,
     textTransform: 'uppercase', letterSpacing: '0.12em', color: accent,
     borderBottom: `2px solid ${accent}`, paddingBottom: '4px', marginBottom: '12px',
   };
@@ -177,13 +192,13 @@ function ClassicTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
   return (
     <div style={{ fontFamily: font.body, color: colors.black, padding: '44px 40px', lineHeight: 1.5 }}>
       <div style={{ textAlign: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: `2px solid ${accent}` }}>
-        <h1 style={{ fontFamily: font.heading, fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px', color: colors.black }}>
+        <h1 style={{ fontFamily: font.heading, fontSize: sz(28, fs), fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px', color: colors.black }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '13px', color: accent, marginBottom: '10px', fontWeight: 500, fontFamily: font.body }}>{personalInfo.title}</p>
+          <p style={{ fontSize: sz(13, fs), color: accent, marginBottom: '10px', fontWeight: 500, fontFamily: font.body }}>{personalInfo.title}</p>
         )}
-        <div style={{ fontSize: '10px', color: colors.muted, display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '4px 14px', fontFamily: font.mono }}>
+        <div style={{ fontSize: sz(10, fs), color: colors.muted, display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '4px 14px', fontFamily: font.mono }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -193,16 +208,16 @@ function ClassicTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
       </div>
       {personalInfo.summary && (
         <div style={{ marginBottom: '22px' }}>
-          <p style={{ fontSize: '11.5px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
+          <p style={{ fontSize: sz(11.5, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
         </div>
       )}
-      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font)}
+      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font, fs)}
     </div>
   );
 }
 
 // ============ 2. MODERN TEMPLATE ============
-function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
+function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -214,7 +229,7 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
 
   const mainSections = sectionOrder.filter(s => s !== 'skills' && s !== 'certifications');
   const mainHeadingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: '10px', fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(10, fs), fontWeight: 700,
     textTransform: 'uppercase', letterSpacing: '0.12em', color: accent,
     marginBottom: '10px', paddingBottom: '4px', borderBottom: `2px solid ${accent}`,
   };
@@ -222,15 +237,15 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
   return (
     <div style={{ fontFamily: font.body, color: colors.black, display: 'flex', minHeight: '100%' }}>
       <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: '36px 22px' }}>
-        <h1 style={{ fontFamily: font.heading, fontSize: '22px', fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontFamily: font.heading, fontSize: sz(22, fs), fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '11px', color: sidebarMuted, marginBottom: '24px', fontFamily: font.body }}>{personalInfo.title}</p>
+          <p style={{ fontSize: sz(11, fs), color: sidebarMuted, marginBottom: '24px', fontFamily: font.body }}>{personalInfo.title}</p>
         )}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '10px', fontWeight: 600, fontFamily: font.mono }}>Contact</h3>
-          <div style={{ fontSize: '10.5px', lineHeight: 1.8, color: sidebarMuted, fontFamily: font.body }}>
+          <h3 style={{ fontSize: sz(9, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '10px', fontWeight: 600, fontFamily: font.mono }}>Contact</h3>
+          <div style={{ fontSize: sz(10.5, fs), lineHeight: 1.8, color: sidebarMuted, fontFamily: font.body }}>
             {personalInfo.email && <p>{personalInfo.email}</p>}
             {personalInfo.phone && <p>{personalInfo.phone}</p>}
             {personalInfo.location && <p>{personalInfo.location}</p>}
@@ -240,17 +255,17 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
         </div>
         {data.skills && data.skills.trim() && (
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Skills</h3>
-            <p style={{ fontSize: '10.5px', color: sidebarText, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
+            <h3 style={{ fontSize: sz(9, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Skills</h3>
+            <p style={{ fontSize: sz(10.5, fs), color: sidebarText, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
           </div>
         )}
         {data.certifications.length > 0 && (
           <div>
-            <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Certifications</h3>
+            <h3 style={{ fontSize: sz(9, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Certifications</h3>
             {data.certifications.map(cert => (
               <div key={cert.id} style={{ marginBottom: '10px' }}>
-                <p style={{ fontSize: '10.5px', fontWeight: 500, color: sidebarText, fontFamily: font.body }}>{cert.name}</p>
-                <p style={{ fontSize: '9.5px', color: sidebarSubtle, fontFamily: font.body }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
+                <p style={{ fontSize: sz(10.5, fs), fontWeight: 500, color: sidebarText, fontFamily: font.body }}>{cert.name}</p>
+                <p style={{ fontSize: sz(9.5, fs), color: sidebarSubtle, fontFamily: font.body }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
               </div>
             ))}
           </div>
@@ -261,7 +276,7 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
         {personalInfo.summary && (
           <div style={{ marginBottom: '22px' }}>
             <h2 style={mainHeadingStyle}>Profile</h2>
-            <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
+            <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
           </div>
         )}
         {mainSections.map(sectionId => {
@@ -274,15 +289,15 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                   {data.experiences.map(exp => (
                     <div key={exp.id} style={{ marginBottom: '14px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <h3 style={{ fontFamily: font.heading, fontSize: '12px', fontWeight: 600, color: colors.black }}>{exp.position}</h3>
-                        <span style={{ fontSize: '9.5px', color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
+                        <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{exp.position}</h3>
+                        <span style={{ fontSize: sz(9.5, fs), color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
                           {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
                         </span>
                       </div>
-                      <p style={{ fontSize: '10.5px', color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
+                      <p style={{ fontSize: sz(10.5, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
                         {exp.company}{exp.location ? ` · ${exp.location}` : ''}
                       </p>
-                      {exp.description && <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+                      {exp.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
                     </div>
                   ))}
                 </div>
@@ -295,10 +310,10 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                   {data.education.map(edu => (
                     <div key={edu.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <h3 style={{ fontFamily: font.heading, fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
-                        <span style={{ fontSize: '9.5px', color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
+                        <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
+                        <span style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
                       </div>
-                      <p style={{ fontSize: '10.5px', color: colors.body, fontFamily: font.body }}>
+                      <p style={{ fontSize: sz(10.5, fs), color: colors.body, fontFamily: font.body }}>
                         {edu.degree}{edu.field ? ` in ${edu.field}` : ''}{edu.gpa ? ` · GPA: ${edu.gpa}` : ''}
                       </p>
                     </div>
@@ -312,9 +327,9 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                   <h2 style={mainHeadingStyle}>Projects</h2>
                   {data.projects.map(proj => (
                     <div key={proj.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
-                      <h3 style={{ fontFamily: font.heading, fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{proj.name}</h3>
-                      {proj.technologies && <p style={{ fontSize: '9.5px', color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-                      {proj.description && <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                      <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
+                      {proj.technologies && <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
+                      {proj.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
                     </div>
                   ))}
                 </div>
@@ -329,7 +344,7 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
 }
 
 // ============ 3. EXECUTIVE TEMPLATE ============
-function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
+function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -337,7 +352,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
   const headerText = isLightColor(accent) ? '#09090B' : '#FAFAFA';
   const headerMuted = isLightColor(accent) ? '#3f3f46' : '#A1A1AA';
   const headingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: '11px', fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(11, fs), fontWeight: 700,
     color: accent, textTransform: 'uppercase', letterSpacing: '0.1em',
     marginBottom: '12px', borderBottom: `2px solid ${accent}`, paddingBottom: '4px',
   };
@@ -348,15 +363,15 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
   return (
     <div style={{ fontFamily: font.body, color: colors.black }}>
       <div style={{ backgroundColor: accent, padding: '28px 40px', color: headerText }}>
-        <h1 style={{ fontFamily: font.heading, fontSize: '26px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px' }}>
+        <h1 style={{ fontFamily: font.heading, fontSize: sz(26, fs), fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px' }}>
           {personalInfo.fullName?.toUpperCase() || 'YOUR NAME'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '12px', color: headerMuted, fontWeight: 400, fontFamily: font.body }}>{personalInfo.title}</p>
+          <p style={{ fontSize: sz(12, fs), color: headerMuted, fontWeight: 400, fontFamily: font.body }}>{personalInfo.title}</p>
         )}
       </div>
 
-      <div style={{ backgroundColor: lightenColor(accent, 0.7), padding: '8px 40px', display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: '9.5px', color: colors.muted, fontFamily: font.mono }}>
+      <div style={{ backgroundColor: lightenColor(accent, 0.7), padding: '8px 40px', display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>
         {personalInfo.email && <span>{personalInfo.email}</span>}
         {personalInfo.phone && <span>{personalInfo.phone}</span>}
         {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -367,7 +382,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
       <div style={{ padding: '24px 40px' }}>
         {personalInfo.summary && (
           <div style={{ marginBottom: '22px', borderLeft: `3px solid ${accent}`, paddingLeft: '14px' }}>
-            <p style={{ fontSize: '11.5px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
+            <p style={{ fontSize: sz(11.5, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
           </div>
         )}
 
@@ -377,15 +392,15 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
             {data.experiences.map(exp => (
               <div key={exp.id} style={{ marginBottom: '14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <h3 style={{ fontFamily: font.heading, fontSize: '12.5px', fontWeight: 700, color: colors.black }}>{exp.position}</h3>
-                  <span style={{ fontSize: '9.5px', color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
+                  <h3 style={{ fontFamily: font.heading, fontSize: sz(12.5, fs), fontWeight: 700, color: colors.black }}>{exp.position}</h3>
+                  <span style={{ fontSize: sz(9.5, fs), color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
                     {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
                   </span>
                 </div>
-                <p style={{ fontSize: '11px', color: colors.muted, fontWeight: 500, marginBottom: '3px', fontFamily: font.body }}>
+                <p style={{ fontSize: sz(11, fs), color: colors.muted, fontWeight: 500, marginBottom: '3px', fontFamily: font.body }}>
                   {exp.company}{exp.location ? ` | ${exp.location}` : ''}
                 </p>
-                {exp.description && <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+                {exp.description && <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
               </div>
             ))}
           </div>
@@ -402,11 +417,11 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                       <h2 style={headingStyle}>Education</h2>
                       {data.education.map(edu => (
                         <div key={edu.id} style={{ marginBottom: '10px' }}>
-                          <h3 style={{ fontFamily: font.heading, fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
-                          <p style={{ fontSize: '10.5px', color: colors.body, fontFamily: font.body }}>
+                          <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
+                          <p style={{ fontSize: sz(10.5, fs), color: colors.body, fontFamily: font.body }}>
                             {edu.degree}{edu.field ? ` in ${edu.field}` : ''} · {edu.startDate}–{edu.endDate}
                           </p>
-                          {edu.gpa && <p style={{ fontSize: '9.5px', color: colors.muted, fontFamily: font.body }}>GPA: {edu.gpa}</p>}
+                          {edu.gpa && <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.body }}>GPA: {edu.gpa}</p>}
                         </div>
                       ))}
                     </div>
@@ -418,8 +433,8 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                       <h2 style={headingStyle}>Key Projects</h2>
                       {data.projects.map(proj => (
                         <div key={proj.id} style={{ marginBottom: '10px' }}>
-                          <h3 style={{ fontFamily: font.heading, fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{proj.name}</h3>
-                          {proj.description && <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                          <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
+                          {proj.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
                         </div>
                       ))}
                     </div>
@@ -437,7 +452,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                   return (
                     <div key="skills" style={{ marginBottom: '22px' }}>
                       <h2 style={headingStyle}>Skills</h2>
-                      <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
+                      <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
                     </div>
                   );
                 case 'certifications':
@@ -447,8 +462,8 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                       <h2 style={headingStyle}>Certifications</h2>
                       {data.certifications.map(cert => (
                         <div key={cert.id} style={{ marginBottom: '8px' }}>
-                          <p style={{ fontSize: '10.5px', fontWeight: 500, color: colors.black, fontFamily: font.body }}>{cert.name}</p>
-                          <p style={{ fontSize: '9.5px', color: colors.muted, fontFamily: font.body }}>{cert.issuer} · {cert.date}</p>
+                          <p style={{ fontSize: sz(10.5, fs), fontWeight: 500, color: colors.black, fontFamily: font.body }}>{cert.name}</p>
+                          <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.body }}>{cert.issuer} · {cert.date}</p>
                         </div>
                       ))}
                     </div>
@@ -465,30 +480,30 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
 }
 
 // ============ 4. COMPACT TEMPLATE ============
-function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
+function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
   const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
   const headingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: '10px', fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(10, fs), fontWeight: 700,
     textTransform: 'uppercase', letterSpacing: '0.14em', color: accent,
     marginBottom: '8px', paddingBottom: '3px', borderBottom: `1.5px solid ${accent}`,
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, padding: '28px 32px', lineHeight: 1.4, fontSize: '10px' }}>
+    <div style={{ fontFamily: font.body, color: colors.black, padding: '28px 32px', lineHeight: 1.4, fontSize: sz(10, fs) }}>
       {/* Compact header — name left, contact right */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', paddingBottom: '10px', borderBottom: `2px solid ${accent}` }}>
         <div>
-          <h1 style={{ fontFamily: font.heading, fontSize: '24px', fontWeight: 700, letterSpacing: '-0.03em', color: colors.black, marginBottom: '1px' }}>
+          <h1 style={{ fontFamily: font.heading, fontSize: sz(24, fs), fontWeight: 700, letterSpacing: '-0.03em', color: colors.black, marginBottom: '1px' }}>
             {personalInfo.fullName || 'Your Name'}
           </h1>
           {personalInfo.title && (
-            <p style={{ fontSize: '11px', color: accent, fontWeight: 500, fontFamily: font.body }}>{personalInfo.title}</p>
+            <p style={{ fontSize: sz(11, fs), color: accent, fontWeight: 500, fontFamily: font.body }}>{personalInfo.title}</p>
           )}
         </div>
-        <div style={{ textAlign: 'right', fontSize: '9px', color: colors.muted, fontFamily: font.mono, lineHeight: 1.7 }}>
+        <div style={{ textAlign: 'right', fontSize: sz(9, fs), color: colors.muted, fontFamily: font.mono, lineHeight: 1.7 }}>
           {personalInfo.email && <p>{personalInfo.email}</p>}
           {personalInfo.phone && <p>{personalInfo.phone}</p>}
           {personalInfo.location && <p>{personalInfo.location}</p>}
@@ -499,7 +514,7 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
 
       {personalInfo.summary && (
         <div style={{ marginBottom: '14px' }}>
-          <p style={{ fontSize: '10px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{personalInfo.summary}</p>
+          <p style={{ fontSize: sz(10, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{personalInfo.summary}</p>
         </div>
       )}
 
@@ -514,14 +529,14 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                 {data.experiences.map(exp => (
                   <div key={exp.id} style={{ marginBottom: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontFamily: font.heading, fontSize: '11px', fontWeight: 600, color: colors.black }}>
+                      <span style={{ fontFamily: font.heading, fontSize: sz(11, fs), fontWeight: 600, color: colors.black }}>
                         {exp.position} <span style={{ fontWeight: 400, color: colors.muted }}>— {exp.company}</span>
                       </span>
-                      <span style={{ fontSize: '9px', color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
+                      <span style={{ fontSize: sz(9, fs), color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
                         {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
                       </span>
                     </div>
-                    {exp.description && <p style={{ fontSize: '10px', color: colors.body, lineHeight: 1.5, marginTop: '2px', fontFamily: font.body }}>{exp.description}</p>}
+                    {exp.description && <p style={{ fontSize: sz(10, fs), color: colors.body, lineHeight: 1.5, marginTop: '2px', fontFamily: font.body }}>{exp.description}</p>}
                   </div>
                 ))}
               </div>
@@ -533,10 +548,10 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                 <h2 style={headingStyle}>Education</h2>
                 {data.education.map(edu => (
                   <div key={edu.id} style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontFamily: font.heading, fontSize: '10.5px', fontWeight: 600, color: colors.black }}>
+                    <span style={{ fontFamily: font.heading, fontSize: sz(10.5, fs), fontWeight: 600, color: colors.black }}>
                       {edu.institution} <span style={{ fontWeight: 400, color: colors.body }}>— {edu.degree}{edu.field ? ` in ${edu.field}` : ''}</span>
                     </span>
-                    <span style={{ fontSize: '9px', color: colors.muted, fontFamily: font.mono }}>{edu.startDate}–{edu.endDate}</span>
+                    <span style={{ fontSize: sz(9, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate}–{edu.endDate}</span>
                   </div>
                 ))}
               </div>
@@ -546,7 +561,7 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
             return (
               <div key="skills" style={{ marginBottom: '14px' }}>
                 <h2 style={headingStyle}>Skills</h2>
-                <p style={{ fontSize: '10px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{data.skills}</p>
+                <p style={{ fontSize: sz(10, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{data.skills}</p>
               </div>
             );
           case 'projects':
@@ -556,9 +571,9 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                 <h2 style={headingStyle}>Projects</h2>
                 {data.projects.map(proj => (
                   <div key={proj.id} style={{ marginBottom: '6px' }}>
-                    <span style={{ fontFamily: font.heading, fontSize: '10.5px', fontWeight: 600, color: colors.black }}>{proj.name}</span>
-                    {proj.technologies && <span style={{ fontSize: '9px', color: colors.muted, fontFamily: font.mono }}> · {proj.technologies}</span>}
-                    {proj.description && <p style={{ fontSize: '10px', color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                    <span style={{ fontFamily: font.heading, fontSize: sz(10.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</span>
+                    {proj.technologies && <span style={{ fontSize: sz(9, fs), color: colors.muted, fontFamily: font.mono }}> · {proj.technologies}</span>}
+                    {proj.description && <p style={{ fontSize: sz(10, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
                   </div>
                 ))}
               </div>
@@ -570,7 +585,7 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
                 <h2 style={headingStyle}>Certifications</h2>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 16px' }}>
                   {data.certifications.map(cert => (
-                    <span key={cert.id} style={{ fontSize: '10px', color: colors.body, fontFamily: font.body }}>
+                    <span key={cert.id} style={{ fontSize: sz(10, fs), color: colors.body, fontFamily: font.body }}>
                       {cert.name} <span style={{ color: colors.muted }}>({cert.issuer})</span>
                     </span>
                   ))}
@@ -586,13 +601,13 @@ function CompactTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
 }
 
 // ============ 5. MINIMAL TEMPLATE ============
-function MinimalTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
+function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
   const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
   const headingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: '13px', fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(13, fs), fontWeight: 700,
     color: colors.black, marginBottom: '12px', paddingBottom: '6px',
     borderBottom: `1px solid ${colors.line}`,
   };
@@ -601,13 +616,13 @@ function MinimalTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
     <div style={{ fontFamily: font.body, color: colors.black, padding: '48px 44px', lineHeight: 1.5 }}>
       {/* Minimal header — clean, no accent color in header */}
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontFamily: font.heading, fontSize: '32px', fontWeight: 700, letterSpacing: '-0.04em', color: colors.black, marginBottom: '4px' }}>
+        <h1 style={{ fontFamily: font.heading, fontSize: sz(32, fs), fontWeight: 700, letterSpacing: '-0.04em', color: colors.black, marginBottom: '4px' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '14px', color: colors.muted, marginBottom: '12px', fontFamily: font.body }}>{personalInfo.title}</p>
+          <p style={{ fontSize: sz(14, fs), color: colors.muted, marginBottom: '12px', fontFamily: font.body }}>{personalInfo.title}</p>
         )}
-        <div style={{ fontSize: '10px', color: colors.muted, display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontFamily: font.mono }}>
+        <div style={{ fontSize: sz(10, fs), color: colors.muted, display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontFamily: font.mono }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -618,24 +633,24 @@ function MinimalTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
 
       {personalInfo.summary && (
         <div style={{ marginBottom: '24px' }}>
-          <p style={{ fontSize: '12px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
+          <p style={{ fontSize: sz(12, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
         </div>
       )}
 
-      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font)}
+      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font, fs)}
     </div>
   );
 }
 
 // ============ 6. TWO COLUMN TEMPLATE ============
-function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
+function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
   const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
   const accentBg = lightenColor(accent, 0.82);
   const headingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: '10px', fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(10, fs), fontWeight: 700,
     textTransform: 'uppercase', letterSpacing: '0.12em', color: accent,
     marginBottom: '10px',
   };
@@ -647,13 +662,13 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
     <div style={{ fontFamily: font.body, color: colors.black }}>
       {/* Header */}
       <div style={{ padding: '32px 36px', borderBottom: `3px solid ${accent}` }}>
-        <h1 style={{ fontFamily: font.heading, fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', color: colors.black, marginBottom: '2px' }}>
+        <h1 style={{ fontFamily: font.heading, fontSize: sz(28, fs), fontWeight: 700, letterSpacing: '-0.03em', color: colors.black, marginBottom: '2px' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '13px', color: accent, fontWeight: 500, marginBottom: '10px', fontFamily: font.body }}>{personalInfo.title}</p>
+          <p style={{ fontSize: sz(13, fs), color: accent, fontWeight: 500, marginBottom: '10px', fontFamily: font.body }}>{personalInfo.title}</p>
         )}
-        <div style={{ fontSize: '9.5px', color: colors.muted, display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontFamily: font.mono }}>
+        <div style={{ fontSize: sz(9.5, fs), color: colors.muted, display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontFamily: font.mono }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -664,7 +679,7 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
 
       {personalInfo.summary && (
         <div style={{ padding: '16px 36px', backgroundColor: accentBg }}>
-          <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
+          <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
         </div>
       )}
 
@@ -682,15 +697,15 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                     {data.experiences.map(exp => (
                       <div key={exp.id} style={{ marginBottom: '14px', paddingBottom: '10px', borderBottom: `1px solid ${colors.line}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                          <h3 style={{ fontFamily: font.heading, fontSize: '12px', fontWeight: 600, color: colors.black }}>{exp.position}</h3>
-                          <span style={{ fontSize: '9px', color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
+                          <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{exp.position}</h3>
+                          <span style={{ fontSize: sz(9, fs), color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
                             {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
                           </span>
                         </div>
-                        <p style={{ fontSize: '10.5px', color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
+                        <p style={{ fontSize: sz(10.5, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
                           {exp.company}{exp.location ? ` · ${exp.location}` : ''}
                         </p>
-                        {exp.description && <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+                        {exp.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
                       </div>
                     ))}
                   </div>
@@ -702,9 +717,9 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                     <h2 style={headingStyle}>Projects</h2>
                     {data.projects.map(proj => (
                       <div key={proj.id} style={{ marginBottom: '10px' }}>
-                        <h3 style={{ fontFamily: font.heading, fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{proj.name}</h3>
-                        {proj.technologies && <p style={{ fontSize: '9.5px', color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-                        {proj.description && <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                        <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
+                        {proj.technologies && <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
+                        {proj.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
                       </div>
                     ))}
                   </div>
@@ -726,11 +741,11 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                     <h2 style={headingStyle}>Education</h2>
                     {data.education.map(edu => (
                       <div key={edu.id} style={{ marginBottom: '10px' }}>
-                        <h3 style={{ fontFamily: font.heading, fontSize: '11px', fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
-                        <p style={{ fontSize: '10px', color: colors.body, fontFamily: font.body }}>
+                        <h3 style={{ fontFamily: font.heading, fontSize: sz(11, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
+                        <p style={{ fontSize: sz(10, fs), color: colors.body, fontFamily: font.body }}>
                           {edu.degree}{edu.field ? ` in ${edu.field}` : ''}
                         </p>
-                        <p style={{ fontSize: '9px', color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</p>
+                        <p style={{ fontSize: sz(9, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</p>
                       </div>
                     ))}
                   </div>
@@ -740,7 +755,7 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                 return (
                   <div key="skills" style={{ marginBottom: '22px' }}>
                     <h2 style={headingStyle}>Skills</h2>
-                    <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
+                    <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
                   </div>
                 );
               case 'certifications':
@@ -750,8 +765,8 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
                     <h2 style={headingStyle}>Certifications</h2>
                     {data.certifications.map(cert => (
                       <div key={cert.id} style={{ marginBottom: '8px' }}>
-                        <p style={{ fontSize: '10.5px', fontWeight: 500, color: colors.black, fontFamily: font.body }}>{cert.name}</p>
-                        <p style={{ fontSize: '9px', color: colors.muted, fontFamily: font.body }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
+                        <p style={{ fontSize: sz(10.5, fs), fontWeight: 500, color: colors.black, fontFamily: font.body }}>{cert.name}</p>
+                        <p style={{ fontSize: sz(9, fs), color: colors.muted, fontFamily: font.body }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
                       </div>
                     ))}
                   </div>
@@ -768,7 +783,7 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font }: TemplateProps) 
 
 // ============ MAIN PREVIEW COMPONENT ============
 const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
-  const { resumeData, selectedTemplate, sectionOrder, accentColor, selectedFont } = useResume();
+  const { resumeData, selectedTemplate, sectionOrder, accentColor, selectedFont, fontSize } = useResume();
 
   const templates: Record<TemplateId, React.ComponentType<TemplateProps>> = {
     classic: ClassicTemplate,
@@ -793,7 +808,7 @@ const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
         transformOrigin: 'top left',
       }}
     >
-      <Template data={resumeData} sectionOrder={sectionOrder} accent={accentColor} font={selectedFont} />
+      <Template data={resumeData} sectionOrder={sectionOrder} accent={accentColor} font={selectedFont} fontSize={fontSize} />
     </div>
   );
 });

@@ -15,7 +15,7 @@ import {
   ArrowLeft, Download, FileText, Trash2, Moon, Sun,
   ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
   Wrench, FolderOpen, Award, Save, ArrowUpDown,
-  Upload, Palette, Printer, Type, LayoutTemplate,
+  Upload, Palette, Printer, Type, LayoutTemplate, ALargeSmall,
 } from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
@@ -40,7 +40,16 @@ const INFO_TABS = [
 const DESIGN_TABS = [
   { value: 'templates', label: 'Templates', icon: LayoutTemplate },
   { value: 'fonts', label: 'Fonts', icon: Type },
+  { value: 'size', label: 'Size', icon: ALargeSmall },
   { value: 'colors', label: 'Colors', icon: Palette },
+];
+
+const FONT_SIZE_PRESETS = [
+  { label: 'XS', value: 0.85, desc: 'Extra small — fit more content' },
+  { label: 'S', value: 0.92, desc: 'Small — compact but readable' },
+  { label: 'M', value: 1, desc: 'Medium — default size' },
+  { label: 'L', value: 1.08, desc: 'Large — easier to read' },
+  { label: 'XL', value: 1.16, desc: 'Extra large — maximum readability' },
 ];
 
 const ALL_TABS = [...INFO_TABS, ...DESIGN_TABS];
@@ -67,6 +76,7 @@ export default function Editor() {
     activeSection, setActiveSection,
     accentColor, setAccentColor,
     selectedFont, setSelectedFont,
+    fontSize, setFontSize,
     exportJSON, importJSON,
   } = useResume();
   const { theme, toggleTheme } = useTheme();
@@ -429,6 +439,55 @@ export default function Editor() {
                             </p>
                           </button>
                         ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="size" className="mt-0">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-display text-lg font-semibold mb-1">Font Size</h3>
+                        <p className="text-sm text-muted-foreground">Adjust the text size across your entire resume.</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        {FONT_SIZE_PRESETS.map(preset => (
+                          <button
+                            key={preset.label}
+                            onClick={() => setFontSize(preset.value)}
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                              fontSize === preset.value
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-border hover:border-muted-foreground/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-display text-sm font-semibold">{preset.label}</span>
+                              {fontSize === preset.value && (
+                                <Badge variant="default" className="text-[10px] h-5">Active</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{preset.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+
+                      <Separator />
+
+                      <div>
+                        <Label className="text-xs font-display font-semibold mb-2 block">Custom Scale</Label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min="0.7"
+                            max="1.3"
+                            step="0.01"
+                            value={fontSize}
+                            onChange={e => setFontSize(parseFloat(e.target.value))}
+                            className="flex-1 accent-primary h-2 cursor-pointer"
+                          />
+                          <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(fontSize * 100)}%</span>
+                        </div>
                       </div>
                     </div>
                   </TabsContent>

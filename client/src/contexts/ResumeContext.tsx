@@ -6,6 +6,7 @@ const TEMPLATE_KEY = 'resumeforge_template';
 const SECTIONS_KEY = 'resumeforge_sections';
 const ACCENT_KEY = 'resumeforge_accent';
 const FONT_KEY = 'resumeforge_font';
+const FONTSIZE_KEY = 'resumeforge_fontsize';
 
 export type SectionId = 'experiences' | 'education' | 'skills' | 'projects' | 'certifications';
 
@@ -54,6 +55,8 @@ interface ResumeContextType {
   setAccentColor: (color: string) => void;
   selectedFont: FontPairing;
   setSelectedFont: (fontId: string) => void;
+  fontSize: number;
+  setFontSize: (size: number) => void;
   exportJSON: () => void;
   importJSON: (file: File) => Promise<void>;
 }
@@ -102,6 +105,9 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   );
 
   const selectedFont = FONT_PAIRINGS.find(f => f.id === selectedFontId) || FONT_PAIRINGS[0];
+  const [fontSize, setFontSizeState] = useState<number>(() =>
+    loadFromStorage(FONTSIZE_KEY, 1)
+  );
 
   // Auto-save resume data
   useEffect(() => {
@@ -133,6 +139,12 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const setSelectedFont = useCallback((fontId: string) => {
     setSelectedFontIdState(fontId);
     localStorage.setItem(FONT_KEY, JSON.stringify(fontId));
+  }, []);
+
+  // Auto-save font size
+  const setFontSize = useCallback((size: number) => {
+    setFontSizeState(size);
+    localStorage.setItem(FONTSIZE_KEY, JSON.stringify(size));
   }, []);
 
   const updatePersonalInfo = useCallback((field: string, value: string) => {
@@ -266,6 +278,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       sectionOrder,
       accentColor,
       fontId: selectedFontId,
+      fontSize,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -276,7 +289,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [resumeData, selectedTemplate, sectionOrder, accentColor, selectedFontId]);
+  }, [resumeData, selectedTemplate, sectionOrder, accentColor, selectedFontId, fontSize]);
 
   // Import resume data from JSON file
   const importJSON = useCallback(async (file: File) => {
@@ -307,6 +320,10 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       setSelectedFontIdState(parsed.fontId);
       localStorage.setItem(FONT_KEY, JSON.stringify(parsed.fontId));
     }
+    if (parsed.fontSize != null) {
+      setFontSizeState(parsed.fontSize);
+      localStorage.setItem(FONTSIZE_KEY, JSON.stringify(parsed.fontSize));
+    }
   }, []);
 
   return (
@@ -324,6 +341,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       sectionOrder, setSectionOrder,
       accentColor, setAccentColor,
       selectedFont, setSelectedFont,
+      fontSize, setFontSize,
       exportJSON, importJSON,
     }}>
       {children}
