@@ -46,9 +46,11 @@ interface ResumeContextType {
   addProject: () => void;
   updateProject: (id: string, field: string, value: string) => void;
   removeProject: (id: string) => void;
+  reorderProjects: (oldIndex: number, newIndex: number) => void;
   addCertification: () => void;
   updateCertification: (id: string, field: string, value: string) => void;
   removeCertification: (id: string) => void;
+  reorderCertifications: (oldIndex: number, newIndex: number) => void;
   selectedTemplate: TemplateId;
   setSelectedTemplate: (id: TemplateId) => void;
   loadSampleData: () => void;
@@ -305,6 +307,15 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const reorderProjects = useCallback((oldIndex: number, newIndex: number) => {
+    setResumeData(prev => {
+      const updated = [...prev.projects];
+      const [moved] = updated.splice(oldIndex, 1);
+      updated.splice(newIndex, 0, moved);
+      return { ...prev, projects: updated };
+    });
+  }, []);
+
   const addCertification = useCallback(() => {
     setResumeData(prev => ({
       ...prev,
@@ -328,6 +339,15 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       ...prev,
       certifications: prev.certifications.filter(cert => cert.id !== id),
     }));
+  }, []);
+
+  const reorderCertifications = useCallback((oldIndex: number, newIndex: number) => {
+    setResumeData(prev => {
+      const updated = [...prev.certifications];
+      const [moved] = updated.splice(oldIndex, 1);
+      updated.splice(newIndex, 0, moved);
+      return { ...prev, certifications: updated };
+    });
   }, []);
 
   const loadSampleData = useCallback(() => {
@@ -413,8 +433,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       addExperience, duplicateExperience, updateExperience, removeExperience, reorderExperiences,
       addEducation, duplicateEducation, updateEducation, removeEducation, reorderEducation,
       updateSkills,
-      addProject, updateProject, removeProject,
-      addCertification, updateCertification, removeCertification,
+      addProject, updateProject, removeProject, reorderProjects,
+      addCertification, updateCertification, removeCertification, reorderCertifications,
       selectedTemplate, setSelectedTemplate,
       loadSampleData, clearAllData,
       activeSection, setActiveSection,
