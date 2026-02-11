@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, ChevronDown } from 'lucide-react';
 
 interface MonthPickerProps {
   value: string; // "YYYY-MM" format (e.g., "2021-03")
@@ -18,6 +18,8 @@ const MONTH_FULL = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+type View = 'month' | 'year';
+
 function parseValue(val: string): { year: number; month: number } | null {
   if (!val) return null;
   const [y, m] = val.split('-').map(Number);
@@ -35,10 +37,18 @@ function toValue(year: number, month: number): string {
   return `${year}-${String(month).padStart(2, '0')}`;
 }
 
+function getYearRange(centerYear: number): number[] {
+  // Show a 4x3 grid of 12 years centered around the given year
+  const startYear = centerYear - 5;
+  return Array.from({ length: 12 }, (_, i) => startYear + i);
+}
+
 export default function MonthPicker({ value, onChange, placeholder, disabled }: MonthPickerProps) {
   const [open, setOpen] = useState(false);
   const parsed = parseValue(value);
   const [viewYear, setViewYear] = useState(() => parsed?.year || new Date().getFullYear());
+  const [view, setView] = useState<View>('month');
+  const [yearRangeCenter, setYearRangeCenter] = useState(() => parsed?.year || new Date().getFullYear());
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -53,19 +63,27 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  // Reset view year when opening
+  // Reset view when opening
   useEffect(() => {
     if (open) {
-      setViewYear(parsed?.year || new Date().getFullYear());
+      const yr = parsed?.year || new Date().getFullYear();
+      setViewYear(yr);
+      setYearRangeCenter(yr);
+      setView('month');
     }
   }, [open]);
 
-  const handleSelect = useCallback((month: number) => {
+  const handleSelectMonth = useCallback((month: number) => {
     onChange(toValue(viewYear, month));
     setOpen(false);
   }, [viewYear, onChange]);
 
-  const isSelected = (month: number) => {
+  const handleSelectYear = useCallback((year: number) => {
+    setViewYear(year);
+    setView('month');
+  }, []);
+
+  const isSelectedMonth = (month: number) => {
     return parsed?.year === viewYear && parsed?.month === month;
   };
 
@@ -73,6 +91,16 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
     const now = new Date();
     return now.getFullYear() === viewYear && now.getMonth() + 1 === month;
   };
+
+  const isSelectedYear = (year: number) => {
+    return parsed?.year === year;
+  };
+
+  const isCurrentYear = (year: number) => {
+    return new Date().getFullYear() === year;
+  };
+
+  const yearRange = getYearRange(yearRangeCenter);
 
   return (
     <div ref={containerRef} className="relative">
@@ -100,7 +128,7 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
         />
       </button>
 
-      {/* MD3 Dropdown Calendar */}
+      {/* MD3 Dropdown */}
       {open && (
         <div
           className="absolute z-50 mt-1 w-full rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200"
@@ -110,69 +138,149 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
             minWidth: '260px',
           }}
         >
-          {/* Year navigation header */}
-          <div className="flex items-center justify-between mb-3">
-            <button
-              type="button"
-              onClick={() => setViewYear(y => y - 1)}
-              className="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
-              style={{ color: 'var(--md3-on-surface-variant)' }}
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-
-            <span
-              className="text-sm font-medium select-none"
-              style={{ color: 'var(--md3-on-surface)' }}
-            >
-              {viewYear}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setViewYear(y => y + 1)}
-              className="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
-              style={{ color: 'var(--md3-on-surface-variant)' }}
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
-
-          {/* Month grid */}
-          <div className="grid grid-cols-3 gap-1">
-            {MONTHS.map((name, idx) => {
-              const monthNum = idx + 1;
-              const selected = isSelected(monthNum);
-              const current = isCurrentMonth(monthNum);
-
-              return (
+          {view === 'month' ? (
+            <>
+              {/* Year navigation header — clickable year label */}
+              <div className="flex items-center justify-between mb-3">
                 <button
-                  key={name}
                   type="button"
-                  onClick={() => handleSelect(monthNum)}
-                  className="h-9 rounded-xl text-xs font-medium transition-all duration-150 hover:opacity-80"
+                  onClick={() => setViewYear(y => y - 1)}
+                  className="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
+                  style={{ color: 'var(--md3-on-surface-variant)' }}
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setYearRangeCenter(viewYear);
+                    setView('year');
+                  }}
+                  className="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-150 hover:opacity-80"
                   style={{
-                    background: selected
-                      ? 'var(--md3-primary)'
-                      : 'transparent',
-                    color: selected
-                      ? 'var(--md3-on-primary)'
-                      : current
-                        ? 'var(--md3-primary)'
-                        : 'var(--md3-on-surface)',
-                    border: current && !selected
-                      ? '1px solid var(--md3-primary)'
-                      : '1px solid transparent',
+                    color: 'var(--md3-on-surface)',
+                    background: 'var(--md3-surface-container-high, var(--md3-surface-container))',
                   }}
                 >
-                  {name}
+                  <span className="text-sm font-medium">{viewYear}</span>
+                  <ChevronDown className="size-3.5" />
                 </button>
-              );
-            })}
-          </div>
+
+                <button
+                  type="button"
+                  onClick={() => setViewYear(y => y + 1)}
+                  className="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
+                  style={{ color: 'var(--md3-on-surface-variant)' }}
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+
+              {/* Month grid */}
+              <div className="grid grid-cols-3 gap-1">
+                {MONTHS.map((name, idx) => {
+                  const monthNum = idx + 1;
+                  const selected = isSelectedMonth(monthNum);
+                  const current = isCurrentMonth(monthNum);
+
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => handleSelectMonth(monthNum)}
+                      className="h-9 rounded-xl text-xs font-medium transition-all duration-150 hover:opacity-80"
+                      style={{
+                        background: selected
+                          ? 'var(--md3-primary)'
+                          : 'transparent',
+                        color: selected
+                          ? 'var(--md3-on-primary)'
+                          : current
+                            ? 'var(--md3-primary)'
+                            : 'var(--md3-on-surface)',
+                        border: current && !selected
+                          ? '1px solid var(--md3-primary)'
+                          : '1px solid transparent',
+                      }}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Year selection view */}
+              <div className="flex items-center justify-between mb-3">
+                <button
+                  type="button"
+                  onClick={() => setYearRangeCenter(c => c - 12)}
+                  className="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
+                  style={{ color: 'var(--md3-on-surface-variant)' }}
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+
+                <span
+                  className="text-sm font-medium select-none"
+                  style={{ color: 'var(--md3-on-surface-variant)' }}
+                >
+                  {yearRange[0]} – {yearRange[yearRange.length - 1]}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setYearRangeCenter(c => c + 12)}
+                  className="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
+                  style={{ color: 'var(--md3-on-surface-variant)' }}
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+
+              {/* Year grid: 3 columns × 4 rows */}
+              <div className="grid grid-cols-3 gap-1">
+                {yearRange.map((year) => {
+                  const selected = isSelectedYear(year);
+                  const current = isCurrentYear(year);
+                  const isViewYear = year === viewYear;
+
+                  return (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => handleSelectYear(year)}
+                      className="h-9 rounded-xl text-xs font-medium transition-all duration-150 hover:opacity-80"
+                      style={{
+                        background: selected
+                          ? 'var(--md3-primary)'
+                          : isViewYear
+                            ? 'var(--md3-primary-container, var(--md3-primary))'
+                            : 'transparent',
+                        color: selected
+                          ? 'var(--md3-on-primary)'
+                          : isViewYear
+                            ? 'var(--md3-on-primary-container, var(--md3-on-primary))'
+                            : current
+                              ? 'var(--md3-primary)'
+                              : 'var(--md3-on-surface)',
+                        border: current && !selected && !isViewYear
+                          ? '1px solid var(--md3-primary)'
+                          : '1px solid transparent',
+                      }}
+                    >
+                      {year}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           {/* Clear button */}
-          {value && (
+          {value && view === 'month' && (
             <div className="flex justify-end mt-3 pt-2" style={{ borderTop: '1px solid var(--md3-outline-variant)' }}>
               <button
                 type="button"
