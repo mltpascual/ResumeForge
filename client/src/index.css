@@ -4,23 +4,25 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * DESIGN SYSTEM: Minimalist / Severe — shadcn/ui
- * Typography: Space Grotesk (display) + Archivo (body) + JetBrains Mono (mono)
- * Colors: Zinc-based neutral palette, sharp contrast
- * Borders: 1px, no radius
- * Shadows: Minimal, functional only
- * Sizing: LARGE — generous padding, tall inputs, readable text
+ * DESIGN SYSTEM: Material Design 3 (Material You)
+ * Typography: Google Sans (display/headline) + Roboto Flex (body/label) + JetBrains Mono (mono)
+ * Colors: MD3 tonal palette — Primary: Deep Teal, Secondary: Warm Slate, Tertiary: Amber
+ * Corners: Full-round (28px large, 16px medium, 12px small, 8px extra-small)
+ * Elevation: MD3 tonal elevation (surface tint overlays, not shadows)
+ * Motion: MD3 emphasized easing (cubic-bezier(0.2, 0, 0, 1))
  */
 
 @theme inline {
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Archivo', sans-serif;
+  --font-display: 'Google Sans', 'Roboto', sans-serif;
+  --font-body: 'Roboto Flex', 'Roboto', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  /* MD3 shape scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -55,75 +57,119 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* MD3 Light Scheme — Deep Teal Primary */
 :root {
-  --radius: 0.5rem;
-  --background: #FFFFFF;
-  --foreground: #09090B;
+  --radius: 12px;
+  /* Surface */
+  --background: #FBF9F6;
+  --foreground: #1C1B1F;
+  /* Card = Surface Container */
   --card: #FFFFFF;
-  --card-foreground: #09090B;
+  --card-foreground: #1C1B1F;
+  /* Popover = Surface Container High */
   --popover: #FFFFFF;
-  --popover-foreground: #09090B;
-  --primary: #18181B;
-  --primary-foreground: #FAFAFA;
-  --secondary: #F4F4F5;
-  --secondary-foreground: #18181B;
-  --muted: #F4F4F5;
-  --muted-foreground: #71717A;
-  --accent: #F4F4F5;
-  --accent-foreground: #18181B;
-  --destructive: #EF4444;
-  --destructive-foreground: #FAFAFA;
-  --border: #E4E4E7;
-  --input: #E4E4E7;
-  --ring: #18181B;
-  --chart-1: #18181B;
-  --chart-2: #52525B;
-  --chart-3: #A1A1AA;
-  --chart-4: #D4D4D8;
-  --chart-5: #F4F4F5;
-  --sidebar: #FAFAFA;
-  --sidebar-foreground: #09090B;
-  --sidebar-primary: #18181B;
-  --sidebar-primary-foreground: #FAFAFA;
-  --sidebar-accent: #F4F4F5;
-  --sidebar-accent-foreground: #18181B;
-  --sidebar-border: #E4E4E7;
-  --sidebar-ring: #18181B;
+  --popover-foreground: #1C1B1F;
+  /* Primary: Deep Teal */
+  --primary: #006B5E;
+  --primary-foreground: #FFFFFF;
+  /* Secondary Container */
+  --secondary: #DAE5E1;
+  --secondary-foreground: #0E1F1C;
+  /* Surface Variant */
+  --muted: #F0ECE9;
+  --muted-foreground: #49454F;
+  /* Tertiary Container */
+  --accent: #FFDDB5;
+  --accent-foreground: #2A1800;
+  /* Error */
+  --destructive: #BA1A1A;
+  --destructive-foreground: #FFFFFF;
+  /* Outline */
+  --border: #C4C7C5;
+  --input: #C4C7C5;
+  --ring: #006B5E;
+  /* Chart colors */
+  --chart-1: #006B5E;
+  --chart-2: #4E6360;
+  --chart-3: #825500;
+  --chart-4: #006B5E;
+  --chart-5: #DAE5E1;
+  /* Sidebar */
+  --sidebar: #F0ECE9;
+  --sidebar-foreground: #1C1B1F;
+  --sidebar-primary: #006B5E;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #DAE5E1;
+  --sidebar-accent-foreground: #0E1F1C;
+  --sidebar-border: #C4C7C5;
+  --sidebar-ring: #006B5E;
+
+  /* MD3 custom properties */
+  --md3-surface-tint: #006B5E;
+  --md3-surface-container-lowest: #FFFFFF;
+  --md3-surface-container-low: #F7F3F0;
+  --md3-surface-container: #F0ECE9;
+  --md3-surface-container-high: #EBE7E4;
+  --md3-surface-container-highest: #E5E1DE;
+  --md3-on-surface-variant: #49454F;
+  --md3-outline-variant: #CAC4D0;
+  --md3-primary-container: #6FF7E0;
+  --md3-on-primary-container: #00201B;
+  --md3-secondary-container: #DAE5E1;
+  --md3-on-secondary-container: #0E1F1C;
+  --md3-tertiary-container: #FFDDB5;
+  --md3-on-tertiary-container: #2A1800;
 }
 
+/* MD3 Dark Scheme */
 .dark {
-  --background: #09090B;
-  --foreground: #FAFAFA;
-  --card: #111113;
-  --card-foreground: #FAFAFA;
-  --popover: #111113;
-  --popover-foreground: #FAFAFA;
-  --primary: #FAFAFA;
-  --primary-foreground: #18181B;
-  --secondary: #27272A;
-  --secondary-foreground: #FAFAFA;
-  --muted: #27272A;
-  --muted-foreground: #A1A1AA;
-  --accent: #27272A;
-  --accent-foreground: #FAFAFA;
-  --destructive: #EF4444;
-  --destructive-foreground: #FAFAFA;
-  --border: #27272A;
-  --input: #27272A;
-  --ring: #D4D4D8;
-  --chart-1: #FAFAFA;
-  --chart-2: #A1A1AA;
-  --chart-3: #71717A;
-  --chart-4: #52525B;
-  --chart-5: #27272A;
-  --sidebar: #111113;
-  --sidebar-foreground: #FAFAFA;
-  --sidebar-primary: #FAFAFA;
-  --sidebar-primary-foreground: #18181B;
-  --sidebar-accent: #27272A;
-  --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: #27272A;
-  --sidebar-ring: #D4D4D8;
+  --background: #1C1B1F;
+  --foreground: #E6E1E5;
+  --card: #2B2930;
+  --card-foreground: #E6E1E5;
+  --popover: #2B2930;
+  --popover-foreground: #E6E1E5;
+  --primary: #4EDBC4;
+  --primary-foreground: #003730;
+  --secondary: #BEC9C5;
+  --secondary-foreground: #293431;
+  --muted: #36343B;
+  --muted-foreground: #CAC4D0;
+  --accent: #F0BF82;
+  --accent-foreground: #462B00;
+  --destructive: #FFB4AB;
+  --destructive-foreground: #690005;
+  --border: #49454F;
+  --input: #49454F;
+  --ring: #4EDBC4;
+  --chart-1: #4EDBC4;
+  --chart-2: #A2CDCA;
+  --chart-3: #F0BF82;
+  --chart-4: #4EDBC4;
+  --chart-5: #36343B;
+  --sidebar: #2B2930;
+  --sidebar-foreground: #E6E1E5;
+  --sidebar-primary: #4EDBC4;
+  --sidebar-primary-foreground: #003730;
+  --sidebar-accent: #36343B;
+  --sidebar-accent-foreground: #E6E1E5;
+  --sidebar-border: #49454F;
+  --sidebar-ring: #4EDBC4;
+
+  --md3-surface-tint: #4EDBC4;
+  --md3-surface-container-lowest: #0E0D11;
+  --md3-surface-container-low: #1C1B1F;
+  --md3-surface-container: #211F26;
+  --md3-surface-container-high: #2B2930;
+  --md3-surface-container-highest: #36343B;
+  --md3-on-surface-variant: #CAC4D0;
+  --md3-outline-variant: #49454F;
+  --md3-primary-container: #005047;
+  --md3-on-primary-container: #6FF7E0;
+  --md3-secondary-container: #3F4A47;
+  --md3-on-secondary-container: #DAE5E1;
+  --md3-tertiary-container: #5F4100;
+  --md3-on-tertiary-container: #FFDDB5;
 }
 
 @layer base {
@@ -133,10 +179,13 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
     font-size: 16px;
+    letter-spacing: 0.01em;
   }
+  /* MD3 Typography — Display & Headline use Google Sans */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Google Sans', 'Roboto', sans-serif;
+    letter-spacing: 0em;
+    font-weight: 500;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -179,17 +228,63 @@
       max-width: 1400px;
     }
   }
+
+  /* MD3 State Layer Styles */
+  .md3-state-layer {
+    position: relative;
+    overflow: hidden;
+  }
+  .md3-state-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background: currentColor;
+    transition: opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+    pointer-events: none;
+  }
+  .md3-state-layer:hover::after {
+    opacity: 0.08;
+  }
+  .md3-state-layer:active::after {
+    opacity: 0.12;
+  }
+
+  /* MD3 Elevation */
+  .md3-elevation-1 {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .md3-elevation-2 {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .md3-elevation-3 {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+  }
 }
 
 @layer utilities {
   .font-display {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Google Sans', 'Roboto', sans-serif;
   }
   .font-body {
-    font-family: 'Archivo', sans-serif;
+    font-family: 'Roboto Flex', 'Roboto', sans-serif;
   }
   .font-mono-accent {
     font-family: 'JetBrains Mono', monospace;
+  }
+  /* MD3 Motion */
+  .md3-motion-standard {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  .md3-motion-emphasized {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  .md3-motion-emphasized-decelerate {
+    transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1);
+  }
+  .md3-motion-emphasized-accelerate {
+    transition-timing-function: cubic-bezier(0.3, 0, 0.8, 0.15);
   }
 }
 
@@ -202,7 +297,6 @@
     padding: 0;
   }
 
-  /* Hide everything except the resume preview */
   .print\:hidden,
   header,
   nav,
@@ -218,7 +312,6 @@
     overflow: visible !important;
   }
 
-  /* Reset the preview container */
   #resume-preview {
     width: 100% !important;
     min-height: auto !important;

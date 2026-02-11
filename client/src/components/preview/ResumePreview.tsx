@@ -45,6 +45,46 @@ interface TemplateProps {
   accent: string;
   font: FontPairing;
   fontSize: number;
+  lineSpacing: number;
+  marginSize: number;
+}
+
+/** Render description text with bullet point support.
+ * Lines starting with • or - are rendered as bullet items.
+ * Other lines are rendered as paragraphs.
+ */
+function renderDescription(text: string, style: React.CSSProperties): React.ReactNode {
+  if (!text) return null;
+  const lines = text.split('\n');
+  const bulletLines: string[] = [];
+  const result: React.ReactNode[] = [];
+
+  const flushBullets = () => {
+    if (bulletLines.length > 0) {
+      result.push(
+        <ul key={`ul-${result.length}`} style={{ ...style, margin: '2px 0', paddingLeft: '16px', listStyleType: 'disc' }}>
+          {bulletLines.map((line, i) => (
+            <li key={i} style={{ marginBottom: '1px' }}>{line}</li>
+          ))}
+        </ul>
+      );
+      bulletLines.length = 0;
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      bulletLines.push(trimmed.replace(/^[•\-*]\s*/, ''));
+    } else if (trimmed === '') {
+      flushBullets();
+    } else {
+      flushBullets();
+      result.push(<p key={`p-${result.length}`} style={style}>{trimmed}</p>);
+    }
+  }
+  flushBullets();
+  return <>{result}</>;
 }
 
 interface SectionColors {
@@ -76,9 +116,11 @@ interface SectionRendererProps {
   headingStyle: React.CSSProperties;
   font: FontPairing;
   fs: number;
+  ls: number;
+  ms: number;
 }
 
-function ExperienceSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
+function ExperienceSection({ data, colors, headingStyle, font, fs, ls }: SectionRendererProps) {
   if (data.experiences.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -94,14 +136,14 @@ function ExperienceSection({ data, colors, headingStyle, font, fs }: SectionRend
           <p style={{ fontSize: sz(11, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
             {exp.company}{exp.location ? ` · ${exp.location}` : ''}
           </p>
-          {exp.description && <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+          {exp.description && renderDescription(exp.description, { fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
         </div>
       ))}
     </div>
   );
 }
 
-function EducationSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
+function EducationSection({ data, colors, headingStyle, font, fs, ls }: SectionRendererProps) {
   if (data.education.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -112,27 +154,27 @@ function EducationSection({ data, colors, headingStyle, font, fs }: SectionRende
             <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
             <span style={{ fontSize: sz(10, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
           </div>
-          <p style={{ fontSize: sz(11, fs), color: colors.body, fontFamily: font.body }}>
+          <p style={{ fontSize: sz(11, fs), color: colors.body, fontFamily: font.body, lineHeight: 1.5 * ls }}>
             {edu.degree}{edu.field ? ` in ${edu.field}` : ''}{edu.gpa ? ` · GPA: ${edu.gpa}` : ''}
           </p>
-          {edu.description && <p style={{ fontSize: sz(10.5, fs), color: colors.muted, fontFamily: font.body }}>{edu.description}</p>}
+          {edu.description && renderDescription(edu.description, { fontSize: sz(10.5, fs), color: colors.muted, fontFamily: font.body, lineHeight: 1.5 * ls })}
         </div>
       ))}
     </div>
   );
 }
 
-function SkillsSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
+function SkillsSection({ data, colors, headingStyle, font, fs, ls }: SectionRendererProps) {
   if (!data.skills || !data.skills.trim()) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
       <h2 style={headingStyle}>Skills</h2>
-      <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
+      <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7 * ls, fontFamily: font.body }}>{data.skills}</p>
     </div>
   );
 }
 
-function ProjectsSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
+function ProjectsSection({ data, colors, headingStyle, font, fs, ls }: SectionRendererProps) {
   if (data.projects.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -141,14 +183,14 @@ function ProjectsSection({ data, colors, headingStyle, font, fs }: SectionRender
         <div key={proj.id} style={{ marginBottom: '10px' }}>
           <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
           {proj.technologies && <p style={{ fontSize: sz(10, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-          {proj.description && <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{proj.description}</p>}
+          {proj.description && renderDescription(proj.description, { fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
         </div>
       ))}
     </div>
   );
 }
 
-function CertificationsSection({ data, colors, headingStyle, font, fs }: SectionRendererProps) {
+function CertificationsSection({ data, colors, headingStyle, font, fs, ls }: SectionRendererProps) {
   if (data.certifications.length === 0) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
@@ -166,19 +208,19 @@ function CertificationsSection({ data, colors, headingStyle, font, fs }: Section
   );
 }
 
-function renderOrderedSections(data: ResumeData, order: SectionId[], colors: SectionColors, headingStyle: React.CSSProperties, font: FontPairing, fs: number) {
+function renderOrderedSections(data: ResumeData, order: SectionId[], colors: SectionColors, headingStyle: React.CSSProperties, font: FontPairing, fs: number, ls: number, ms: number) {
   const sectionMap: Record<SectionId, React.ReactNode> = {
-    experiences: <ExperienceSection key="experiences" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
-    education: <EducationSection key="education" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
-    skills: <SkillsSection key="skills" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
-    projects: <ProjectsSection key="projects" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
-    certifications: <CertificationsSection key="certifications" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} />,
+    experiences: <ExperienceSection key="experiences" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} ls={ls} ms={ms} />,
+    education: <EducationSection key="education" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} ls={ls} ms={ms} />,
+    skills: <SkillsSection key="skills" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} ls={ls} ms={ms} />,
+    projects: <ProjectsSection key="projects" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} ls={ls} ms={ms} />,
+    certifications: <CertificationsSection key="certifications" data={data} colors={colors} headingStyle={headingStyle} font={font} fs={fs} ls={ls} ms={ms} />,
   };
   return order.map(id => sectionMap[id]);
 }
 
 // ============ 1. CLASSIC TEMPLATE ============
-function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
+function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -190,7 +232,7 @@ function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, padding: '44px 40px', lineHeight: 1.5 }}>
+    <div style={{ fontFamily: font.body, color: colors.black, padding: `${44 * ms}px ${40 * ms}px`, lineHeight: 1.5 * ls }}>
       <div style={{ textAlign: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: `2px solid ${accent}` }}>
         <h1 style={{ fontFamily: font.heading, fontSize: sz(28, fs), fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px', color: colors.black }}>
           {personalInfo.fullName || 'Your Name'}
@@ -211,13 +253,13 @@ function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
           <p style={{ fontSize: sz(11.5, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
         </div>
       )}
-      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font, fs)}
+      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font, fs, ls, ms)}
     </div>
   );
 }
 
 // ============ 2. MODERN TEMPLATE ============
-function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
+function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -235,8 +277,8 @@ function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Temp
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, display: 'flex', minHeight: '100%' }}>
-      <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: '36px 22px' }}>
+    <div style={{ fontFamily: font.body, color: colors.black, display: 'flex', minHeight: '100%', lineHeight: 1.5 * ls }}>
+      <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: `${36 * ms}px ${22 * ms}px` }}>
         <h1 style={{ fontFamily: font.heading, fontSize: sz(22, fs), fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
@@ -272,7 +314,7 @@ function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Temp
         )}
       </div>
 
-      <div style={{ width: '65%', padding: '36px 28px' }}>
+      <div style={{ width: '65%', padding: `${36 * ms}px ${28 * ms}px` }}>
         {personalInfo.summary && (
           <div style={{ marginBottom: '22px' }}>
             <h2 style={mainHeadingStyle}>Profile</h2>
@@ -297,7 +339,7 @@ function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Temp
                       <p style={{ fontSize: sz(10.5, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
                         {exp.company}{exp.location ? ` · ${exp.location}` : ''}
                       </p>
-                      {exp.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+                      {exp.description && renderDescription(exp.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
                     </div>
                   ))}
                 </div>
@@ -329,7 +371,7 @@ function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Temp
                     <div key={proj.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
                       {proj.technologies && <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-                      {proj.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                      {proj.description && renderDescription(proj.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5 * ls, fontFamily: font.body })}
                     </div>
                   ))}
                 </div>
@@ -344,7 +386,7 @@ function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Temp
 }
 
 // ============ 3. EXECUTIVE TEMPLATE ============
-function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
+function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -361,8 +403,8 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
   const rightSections = sectionOrder.filter(s => s === 'skills' || s === 'certifications');
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black }}>
-      <div style={{ backgroundColor: accent, padding: '28px 40px', color: headerText }}>
+    <div style={{ fontFamily: font.body, color: colors.black, lineHeight: 1.5 * ls }}>
+      <div style={{ backgroundColor: accent, padding: `${28 * ms}px ${40 * ms}px`, color: headerText }}>
         <h1 style={{ fontFamily: font.heading, fontSize: sz(26, fs), fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px' }}>
           {personalInfo.fullName?.toUpperCase() || 'YOUR NAME'}
         </h1>
@@ -371,7 +413,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
         )}
       </div>
 
-      <div style={{ backgroundColor: lightenColor(accent, 0.7), padding: '8px 40px', display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>
+      <div style={{ backgroundColor: lightenColor(accent, 0.7), padding: `8px ${40 * ms}px`, display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>
         {personalInfo.email && <span>{personalInfo.email}</span>}
         {personalInfo.phone && <span>{personalInfo.phone}</span>}
         {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -379,7 +421,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
         {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
       </div>
 
-      <div style={{ padding: '24px 40px' }}>
+      <div style={{ padding: `${24 * ms}px ${40 * ms}px` }}>
         {personalInfo.summary && (
           <div style={{ marginBottom: '22px', borderLeft: `3px solid ${accent}`, paddingLeft: '14px' }}>
             <p style={{ fontSize: sz(11.5, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
@@ -400,7 +442,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
                 <p style={{ fontSize: sz(11, fs), color: colors.muted, fontWeight: 500, marginBottom: '3px', fontFamily: font.body }}>
                   {exp.company}{exp.location ? ` | ${exp.location}` : ''}
                 </p>
-                {exp.description && <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+                {exp.description && renderDescription(exp.description, { fontSize: sz(11, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
               </div>
             ))}
           </div>
@@ -434,7 +476,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
                       {data.projects.map(proj => (
                         <div key={proj.id} style={{ marginBottom: '10px' }}>
                           <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
-                          {proj.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                          {proj.description && renderDescription(proj.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5 * ls, fontFamily: font.body })}
                         </div>
                       ))}
                     </div>
@@ -480,7 +522,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
 }
 
 // ============ 4. COMPACT TEMPLATE ============
-function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
+function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -492,7 +534,7 @@ function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, padding: '28px 32px', lineHeight: 1.4, fontSize: sz(10, fs) }}>
+    <div style={{ fontFamily: font.body, color: colors.black, padding: `${28 * ms}px ${32 * ms}px`, lineHeight: 1.4 * ls, fontSize: sz(10, fs) }}>
       {/* Compact header — name left, contact right */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', paddingBottom: '10px', borderBottom: `2px solid ${accent}` }}>
         <div>
@@ -536,7 +578,7 @@ function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
                         {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
                       </span>
                     </div>
-                    {exp.description && <p style={{ fontSize: sz(10, fs), color: colors.body, lineHeight: 1.5, marginTop: '2px', fontFamily: font.body }}>{exp.description}</p>}
+                    {exp.description && renderDescription(exp.description, { fontSize: sz(10, fs), color: colors.body, lineHeight: 1.5 * ls, marginTop: '2px', fontFamily: font.body })}
                   </div>
                 ))}
               </div>
@@ -573,7 +615,7 @@ function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
                   <div key={proj.id} style={{ marginBottom: '6px' }}>
                     <span style={{ fontFamily: font.heading, fontSize: sz(10.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</span>
                     {proj.technologies && <span style={{ fontSize: sz(9, fs), color: colors.muted, fontFamily: font.mono }}> · {proj.technologies}</span>}
-                    {proj.description && <p style={{ fontSize: sz(10, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                    {proj.description && renderDescription(proj.description, { fontSize: sz(10, fs), color: colors.body, lineHeight: 1.5 * ls, fontFamily: font.body })}
                   </div>
                 ))}
               </div>
@@ -601,7 +643,7 @@ function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
 }
 
 // ============ 5. MINIMAL TEMPLATE ============
-function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
+function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -613,7 +655,7 @@ function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, padding: '48px 44px', lineHeight: 1.5 }}>
+    <div style={{ fontFamily: font.body, color: colors.black, padding: `${48 * ms}px ${44 * ms}px`, lineHeight: 1.5 * ls }}>
       {/* Minimal header — clean, no accent color in header */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontFamily: font.heading, fontSize: sz(32, fs), fontWeight: 700, letterSpacing: '-0.04em', color: colors.black, marginBottom: '4px' }}>
@@ -637,13 +679,13 @@ function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs }: Tem
         </div>
       )}
 
-      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font, fs)}
+      {renderOrderedSections(data, sectionOrder, colors, headingStyle, font, fs, ls, ms)}
     </div>
   );
 }
 
 // ============ 6. TWO COLUMN TEMPLATE ============
-function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: TemplateProps) {
+function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -659,9 +701,9 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
   const rightSections = sectionOrder.filter(s => s === 'education' || s === 'skills' || s === 'certifications');
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black }}>
+    <div style={{ fontFamily: font.body, color: colors.black, lineHeight: 1.5 * ls }}>
       {/* Header */}
-      <div style={{ padding: '32px 36px', borderBottom: `3px solid ${accent}` }}>
+      <div style={{ padding: `${32 * ms}px ${36 * ms}px`, borderBottom: `3px solid ${accent}` }}>
         <h1 style={{ fontFamily: font.heading, fontSize: sz(28, fs), fontWeight: 700, letterSpacing: '-0.03em', color: colors.black, marginBottom: '2px' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
@@ -678,13 +720,13 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
       </div>
 
       {personalInfo.summary && (
-        <div style={{ padding: '16px 36px', backgroundColor: accentBg }}>
+        <div style={{ padding: `16px ${36 * ms}px`, backgroundColor: accentBg }}>
           <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
         </div>
       )}
 
       {/* Two columns */}
-      <div style={{ display: 'flex', padding: '24px 36px', gap: '28px' }}>
+      <div style={{ display: 'flex', padding: `${24 * ms}px ${36 * ms}px`, gap: '28px' }}>
         {/* Left — 60% */}
         <div style={{ flex: '1.4' }}>
           {leftSections.map(sectionId => {
@@ -705,7 +747,7 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
                         <p style={{ fontSize: sz(10.5, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
                           {exp.company}{exp.location ? ` · ${exp.location}` : ''}
                         </p>
-                        {exp.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6, fontFamily: font.body }}>{exp.description}</p>}
+                        {exp.description && renderDescription(exp.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
                       </div>
                     ))}
                   </div>
@@ -719,7 +761,7 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
                       <div key={proj.id} style={{ marginBottom: '10px' }}>
                         <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
                         {proj.technologies && <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-                        {proj.description && <p style={{ fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5, fontFamily: font.body }}>{proj.description}</p>}
+                        {proj.description && renderDescription(proj.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5 * ls, fontFamily: font.body })}
                       </div>
                     ))}
                   </div>
@@ -783,7 +825,7 @@ function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs }: T
 
 // ============ MAIN PREVIEW COMPONENT ============
 const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
-  const { resumeData, selectedTemplate, sectionOrder, accentColor, selectedFont, fontSize } = useResume();
+  const { resumeData, selectedTemplate, sectionOrder, accentColor, selectedFont, fontSize, lineSpacing, marginSize } = useResume();
 
   const templates: Record<TemplateId, React.ComponentType<TemplateProps>> = {
     classic: ClassicTemplate,
@@ -808,7 +850,7 @@ const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
         transformOrigin: 'top left',
       }}
     >
-      <Template data={resumeData} sectionOrder={sectionOrder} accent={accentColor} font={selectedFont} fontSize={fontSize} />
+      <Template data={resumeData} sectionOrder={sectionOrder} accent={accentColor} font={selectedFont} fontSize={fontSize} lineSpacing={lineSpacing} marginSize={marginSize} />
     </div>
   );
 });

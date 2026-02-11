@@ -7,6 +7,8 @@ const SECTIONS_KEY = 'resumeforge_sections';
 const ACCENT_KEY = 'resumeforge_accent';
 const FONT_KEY = 'resumeforge_font';
 const FONTSIZE_KEY = 'resumeforge_fontsize';
+const LINESPACING_KEY = 'resumeforge_linespacing';
+const MARGIN_KEY = 'resumeforge_margin';
 
 export type SectionId = 'experiences' | 'education' | 'skills' | 'projects' | 'certifications';
 
@@ -57,6 +59,10 @@ interface ResumeContextType {
   setSelectedFont: (fontId: string) => void;
   fontSize: number;
   setFontSize: (size: number) => void;
+  lineSpacing: number;
+  setLineSpacing: (spacing: number) => void;
+  marginSize: number;
+  setMarginSize: (size: number) => void;
   exportJSON: () => void;
   importJSON: (file: File) => Promise<void>;
 }
@@ -108,6 +114,12 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState<number>(() =>
     loadFromStorage(FONTSIZE_KEY, 1)
   );
+  const [lineSpacing, setLineSpacingState] = useState<number>(() =>
+    loadFromStorage(LINESPACING_KEY, 1)
+  );
+  const [marginSize, setMarginSizeState] = useState<number>(() =>
+    loadFromStorage(MARGIN_KEY, 1)
+  );
 
   // Auto-save resume data
   useEffect(() => {
@@ -145,6 +157,18 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const setFontSize = useCallback((size: number) => {
     setFontSizeState(size);
     localStorage.setItem(FONTSIZE_KEY, JSON.stringify(size));
+  }, []);
+
+  // Auto-save line spacing
+  const setLineSpacing = useCallback((spacing: number) => {
+    setLineSpacingState(spacing);
+    localStorage.setItem(LINESPACING_KEY, JSON.stringify(spacing));
+  }, []);
+
+  // Auto-save margin size
+  const setMarginSize = useCallback((size: number) => {
+    setMarginSizeState(size);
+    localStorage.setItem(MARGIN_KEY, JSON.stringify(size));
   }, []);
 
   const updatePersonalInfo = useCallback((field: string, value: string) => {
@@ -279,6 +303,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       accentColor,
       fontId: selectedFontId,
       fontSize,
+      lineSpacing,
+      marginSize,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -289,7 +315,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [resumeData, selectedTemplate, sectionOrder, accentColor, selectedFontId, fontSize]);
+  }, [resumeData, selectedTemplate, sectionOrder, accentColor, selectedFontId, fontSize, lineSpacing, marginSize]);
 
   // Import resume data from JSON file
   const importJSON = useCallback(async (file: File) => {
@@ -324,6 +350,14 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       setFontSizeState(parsed.fontSize);
       localStorage.setItem(FONTSIZE_KEY, JSON.stringify(parsed.fontSize));
     }
+    if (parsed.lineSpacing != null) {
+      setLineSpacingState(parsed.lineSpacing);
+      localStorage.setItem(LINESPACING_KEY, JSON.stringify(parsed.lineSpacing));
+    }
+    if (parsed.marginSize != null) {
+      setMarginSizeState(parsed.marginSize);
+      localStorage.setItem(MARGIN_KEY, JSON.stringify(parsed.marginSize));
+    }
   }, []);
 
   return (
@@ -342,6 +376,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       accentColor, setAccentColor,
       selectedFont, setSelectedFont,
       fontSize, setFontSize,
+      lineSpacing, setLineSpacing,
+      marginSize, setMarginSize,
       exportJSON, importJSON,
     }}>
       {children}

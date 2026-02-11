@@ -6,16 +6,15 @@ import { FONT_PAIRINGS } from '@/types/resume';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Download, FileText, Trash2, Moon, Sun,
   ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
   Wrench, FolderOpen, Award, Save, ArrowUpDown,
   Upload, Palette, Printer, Type, LayoutTemplate, ALargeSmall,
+  Check,
 } from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
@@ -52,6 +51,19 @@ const FONT_SIZE_PRESETS = [
   { label: 'XL', value: 1.16, desc: 'Extra large — maximum readability' },
 ];
 
+const LINE_SPACING_PRESETS = [
+  { label: 'Tight', value: 0.85, desc: 'Minimal spacing — fit more content' },
+  { label: 'Normal', value: 1, desc: 'Default line spacing' },
+  { label: 'Relaxed', value: 1.15, desc: 'Comfortable reading spacing' },
+  { label: 'Loose', value: 1.3, desc: 'Maximum breathing room' },
+];
+
+const MARGIN_PRESETS = [
+  { label: 'Narrow', value: 0.6, desc: 'Tight margins — maximize content area' },
+  { label: 'Normal', value: 1, desc: 'Standard page margins' },
+  { label: 'Wide', value: 1.4, desc: 'Generous margins — clean look' },
+];
+
 const ALL_TABS = [...INFO_TABS, ...DESIGN_TABS];
 
 const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
@@ -64,7 +76,7 @@ const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
 ];
 
 const PRESET_COLORS = [
-  '#18181B', '#1E3A5F', '#1E40AF', '#7C3AED', '#BE185D',
+  '#006B5E', '#1E3A5F', '#1E40AF', '#7C3AED', '#BE185D',
   '#B91C1C', '#C2410C', '#A16207', '#15803D', '#0F766E',
   '#4338CA', '#0369A1', '#6D28D9', '#9333EA', '#DB2777',
 ];
@@ -77,6 +89,8 @@ export default function Editor() {
     accentColor, setAccentColor,
     selectedFont, setSelectedFont,
     fontSize, setFontSize,
+    lineSpacing, setLineSpacing,
+    marginSize, setMarginSize,
     exportJSON, importJSON,
   } = useResume();
   const { theme, toggleTheme } = useTheme();
@@ -184,6 +198,13 @@ export default function Editor() {
     toast.success('JSON exported');
   }, [exportJSON]);
 
+  /* MD3 helper: selection card style */
+  const cardStyle = (active: boolean) => ({
+    background: active ? 'var(--md3-primary-container)' : 'var(--md3-surface-container)',
+    color: active ? 'var(--md3-on-primary-container)' : 'inherit',
+    border: active ? '2px solid var(--primary)' : '1px solid var(--md3-outline-variant)',
+  });
+
   return (
     <>
       <input
@@ -195,25 +216,30 @@ export default function Editor() {
       />
 
       <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden print:overflow-visible">
-        {/* Top Bar — compact, only essential actions */}
-        <header className="border-b bg-background/95 backdrop-blur-sm shrink-0 print:hidden">
-          <div className="flex items-center justify-between h-12 px-4">
+        {/* MD3 Top App Bar */}
+        <header className="shrink-0 print:hidden" style={{ background: 'var(--md3-surface-container-low)', borderBottom: '1px solid var(--md3-outline-variant)' }}>
+          <div className="flex items-center justify-between h-14 px-4">
             <div className="flex items-center gap-3">
               <Link href="/">
-                <Button variant="ghost" size="icon" className="size-8">
-                  <ArrowLeft className="size-4" />
+                <Button variant="ghost" size="icon" className="size-10 rounded-full">
+                  <ArrowLeft className="size-5" />
                 </Button>
               </Link>
-              <Separator orientation="vertical" className="h-5" />
-              <span className="font-display text-base font-bold tracking-tight">ResumeForge</span>
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--md3-primary-container)' }}>
+                  <FileText className="size-4" style={{ color: 'var(--md3-on-primary-container)' }} />
+                </div>
+                <span className="font-display text-lg font-medium">ResumeForge</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-1">
+              {/* MD3 Icon Buttons */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => { loadSampleData(); toast.success('Sample data loaded'); }} className="gap-1.5 h-8 text-xs">
-                    <FileText className="size-3.5" />
-                    <span className="hidden sm:inline">Sample</span>
+                  <Button variant="ghost" size="sm" onClick={() => { loadSampleData(); toast.success('Sample data loaded'); }} className="gap-1.5 h-9 text-xs rounded-full px-3">
+                    <FileText className="size-4" />
+                    <span className="hidden sm:inline font-medium">Sample</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Load sample data</TooltipContent>
@@ -221,20 +247,20 @@ export default function Editor() {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => { clearAllData(); toast.info('Data cleared'); }} className="gap-1.5 h-8 text-xs">
-                    <Trash2 className="size-3.5" />
-                    <span className="hidden sm:inline">Clear</span>
+                  <Button variant="ghost" size="sm" onClick={() => { clearAllData(); toast.info('Data cleared'); }} className="gap-1.5 h-9 text-xs rounded-full px-3">
+                    <Trash2 className="size-4" />
+                    <span className="hidden sm:inline font-medium">Clear</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Clear all data</TooltipContent>
               </Tooltip>
 
-              <Separator orientation="vertical" className="h-5 mx-1" />
+              <div className="w-px h-6 mx-1" style={{ background: 'var(--md3-outline-variant)' }} />
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="size-3.5" />
+                  <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="size-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Import JSON</TooltipContent>
@@ -242,21 +268,21 @@ export default function Editor() {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={handleExportJSON} className="gap-1.5 h-8 text-xs">
-                    <Download className="size-3.5" />
-                    <span className="hidden lg:inline">JSON</span>
+                  <Button variant="ghost" size="sm" onClick={handleExportJSON} className="gap-1.5 h-9 text-xs rounded-full px-3">
+                    <Download className="size-4" />
+                    <span className="hidden lg:inline font-medium">JSON</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Export as JSON</TooltipContent>
               </Tooltip>
 
-              <Separator orientation="vertical" className="h-5 mx-1" />
+              <div className="w-px h-6 mx-1" style={{ background: 'var(--md3-outline-variant)' }} />
 
               {toggleTheme && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8" onClick={toggleTheme}>
-                      {theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+                    <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={toggleTheme}>
+                      {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Toggle {theme === 'dark' ? 'light' : 'dark'} mode</TooltipContent>
@@ -265,37 +291,39 @@ export default function Editor() {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8" onClick={handlePrint}>
-                    <Printer className="size-3.5" />
+                  <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={handlePrint}>
+                    <Printer className="size-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Print (Ctrl+P)</TooltipContent>
               </Tooltip>
 
+              {/* MD3 Filled Button for Export */}
               <Button
-                size="sm"
                 onClick={handleExportPDF}
                 disabled={exporting}
-                className="gap-1.5 h-8 text-xs font-display ml-1"
+                className="gap-2 h-10 text-sm font-display font-medium rounded-full px-5 ml-1"
               >
-                <Download className="size-3.5" />
+                <Download className="size-4" />
                 {exporting ? 'Exporting...' : 'Export PDF'}
               </Button>
             </div>
           </div>
         </header>
 
-        {/* Mobile toggle */}
-        <div className="lg:hidden flex border-b print:hidden">
+        {/* Mobile toggle — MD3 Segmented Button */}
+        <div className="lg:hidden flex p-2 print:hidden" style={{ background: 'var(--md3-surface-container)' }}>
           <button
             onClick={() => setShowPreview(false)}
-            className={`flex-1 py-2.5 text-sm font-display font-semibold text-center transition-colors ${!showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className="flex-1 py-2.5 text-sm font-display font-medium text-center rounded-full transition-all"
+            style={!showPreview ? { background: 'var(--md3-primary-container)', color: 'var(--md3-on-primary-container)' } : { color: 'var(--md3-on-surface-variant)' }}
           >
             Editor
           </button>
           <button
             onClick={() => setShowPreview(true)}
-            className={`flex-1 py-2.5 text-sm font-display font-semibold text-center transition-colors ${showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className="flex-1 py-2.5 text-sm font-display font-medium text-center rounded-full transition-all"
+            style={showPreview ? { background: 'var(--md3-primary-container)', color: 'var(--md3-on-primary-container)' } : { color: 'var(--md3-on-surface-variant)' }}
           >
             Preview
           </button>
@@ -304,34 +332,31 @@ export default function Editor() {
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden print:overflow-visible print:block">
           {/* Left: Form Editor + Design Controls */}
-          <div className={`w-full lg:w-[560px] xl:w-[620px] border-r flex flex-col shrink-0 overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'} print:hidden`}>
+          <div className={`w-full lg:w-[560px] xl:w-[620px] flex flex-col shrink-0 overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'} print:hidden`} style={{ borderRight: '1px solid var(--md3-outline-variant)' }}>
             <Tabs value={activeSection} onValueChange={setActiveSection} className="flex flex-col h-full overflow-hidden">
-              {/* Horizontal Tabs — Info + Design */}
-              <div className="border-b px-3 pt-2 pb-0 shrink-0 overflow-x-auto">
-                <TabsList className="w-full h-auto flex-wrap gap-0.5 bg-transparent p-0 justify-start">
-                  {/* Info tabs */}
+              {/* MD3 Navigation Tabs */}
+              <div className="shrink-0 overflow-x-auto px-3 pt-2 pb-0" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
+                <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start">
                   {INFO_TABS.map(tab => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="gap-1.5 px-2.5 py-2 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md"
+                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-primary-container)] data-[state=active]:text-[var(--md3-on-primary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all"
                     >
                       <tab.icon className="size-3.5" />
                       <span className="hidden sm:inline">{tab.label}</span>
                     </TabsTrigger>
                   ))}
 
-                  {/* Separator dot */}
                   <div className="flex items-center px-1">
-                    <div className="w-px h-4 bg-border" />
+                    <div className="w-px h-4" style={{ background: 'var(--md3-outline-variant)' }} />
                   </div>
 
-                  {/* Design tabs */}
                   {DESIGN_TABS.map(tab => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="gap-1.5 px-2.5 py-2 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md"
+                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-secondary-container)] data-[state=active]:text-[var(--md3-on-secondary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all"
                     >
                       <tab.icon className="size-3.5" />
                       <span className="hidden sm:inline">{tab.label}</span>
@@ -341,7 +366,7 @@ export default function Editor() {
               </div>
 
               {/* Tab Content — scrollable */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto" style={{ background: 'var(--md3-surface-container-lowest)' }}>
                 <div className="p-5 lg:p-6">
                   {/* Info tab contents */}
                   <TabsContent value="personal" className="mt-0">
@@ -365,7 +390,7 @@ export default function Editor() {
                   <TabsContent value="order" className="mt-0">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-display text-lg font-semibold mb-1">Section Order</h3>
+                        <h3 className="font-display text-lg font-medium mb-1">Section Order</h3>
                         <p className="text-sm text-muted-foreground mb-4">Drag to reorder how sections appear on your resume.</p>
                       </div>
                       <DraggableSections />
@@ -376,7 +401,7 @@ export default function Editor() {
                   <TabsContent value="templates" className="mt-0">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-display text-lg font-semibold mb-1">Templates</h3>
+                        <h3 className="font-display text-lg font-medium mb-1">Templates</h3>
                         <p className="text-sm text-muted-foreground">Choose a layout for your resume.</p>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -384,19 +409,18 @@ export default function Editor() {
                           <button
                             key={t.id}
                             onClick={() => setSelectedTemplate(t.id)}
-                            className={`text-left p-4 rounded-lg border-2 transition-all hover:shadow-md ${
-                              selectedTemplate === t.id
-                                ? 'border-primary bg-primary/5 shadow-sm'
-                                : 'border-border hover:border-muted-foreground/30'
-                            }`}
+                            className="text-left p-4 rounded-2xl transition-all hover:shadow-md md3-state-layer"
+                            style={cardStyle(selectedTemplate === t.id)}
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <span className="font-display text-sm font-semibold">{t.label}</span>
+                              <span className="font-display text-sm font-medium">{t.label}</span>
                               {selectedTemplate === t.id && (
-                                <Badge variant="default" className="text-[10px] h-5">Active</Badge>
+                                <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                  <Check className="size-3 text-white" />
+                                </div>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground leading-relaxed">{t.desc}</p>
+                            <p className="text-xs opacity-70 leading-relaxed">{t.desc}</p>
                           </button>
                         ))}
                       </div>
@@ -406,7 +430,7 @@ export default function Editor() {
                   <TabsContent value="fonts" className="mt-0">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-display text-lg font-semibold mb-1">Font Pairing</h3>
+                        <h3 className="font-display text-lg font-medium mb-1">Font Pairing</h3>
                         <p className="text-sm text-muted-foreground">Select a heading + body font combination.</p>
                       </div>
                       <div className="space-y-2">
@@ -414,27 +438,22 @@ export default function Editor() {
                           <button
                             key={font.id}
                             onClick={() => setSelectedFont(font.id)}
-                            className={`w-full text-left p-4 rounded-lg border-2 transition-all hover:shadow-md ${
-                              selectedFont.id === font.id
-                                ? 'border-primary bg-primary/5 shadow-sm'
-                                : 'border-border hover:border-muted-foreground/30'
-                            }`}
+                            className="w-full text-left p-4 rounded-2xl transition-all hover:shadow-md md3-state-layer"
+                            style={cardStyle(selectedFont.id === font.id)}
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold" style={{ fontFamily: font.heading }}>{font.name}</span>
+                              <span className="text-sm font-medium" style={{ fontFamily: font.heading }}>{font.name}</span>
                               {selectedFont.id === font.id && (
-                                <Badge variant="default" className="text-[10px] h-5">Active</Badge>
+                                <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                  <Check className="size-3 text-white" />
+                                </div>
                               )}
                             </div>
-                            <div className="flex gap-4 text-xs text-muted-foreground">
-                              <span>
-                                <span className="font-semibold" style={{ fontFamily: font.heading }}>Heading</span>
-                              </span>
-                              <span>
-                                <span style={{ fontFamily: font.body }}>Body text sample</span>
-                              </span>
+                            <div className="flex gap-4 text-xs opacity-70">
+                              <span style={{ fontFamily: font.heading, fontWeight: 600 }}>Heading</span>
+                              <span style={{ fontFamily: font.body }}>Body text sample</span>
                             </div>
-                            <p className="mt-2 text-[13px] leading-relaxed" style={{ fontFamily: font.body }}>
+                            <p className="mt-2 text-[13px] leading-relaxed opacity-80" style={{ fontFamily: font.body }}>
                               The quick brown fox jumps over the lazy dog.
                             </p>
                           </button>
@@ -444,9 +463,10 @@ export default function Editor() {
                   </TabsContent>
 
                   <TabsContent value="size" className="mt-0">
-                    <div className="space-y-4">
+                    <div className="space-y-5">
+                      {/* Font Size */}
                       <div>
-                        <h3 className="font-display text-lg font-semibold mb-1">Font Size</h3>
+                        <h3 className="font-display text-lg font-medium mb-1">Font Size</h3>
                         <p className="text-sm text-muted-foreground">Adjust the text size across your entire resume.</p>
                       </div>
 
@@ -455,27 +475,24 @@ export default function Editor() {
                           <button
                             key={preset.label}
                             onClick={() => setFontSize(preset.value)}
-                            className={`w-full text-left p-4 rounded-lg border-2 transition-all hover:shadow-md ${
-                              fontSize === preset.value
-                                ? 'border-primary bg-primary/5 shadow-sm'
-                                : 'border-border hover:border-muted-foreground/30'
-                            }`}
+                            className="w-full text-left p-3.5 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
+                            style={cardStyle(fontSize === preset.value)}
                           >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-display text-sm font-semibold">{preset.label}</span>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="font-display text-sm font-medium">{preset.label}</span>
                               {fontSize === preset.value && (
-                                <Badge variant="default" className="text-[10px] h-5">Active</Badge>
+                                <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                  <Check className="size-3 text-white" />
+                                </div>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground">{preset.desc}</p>
+                            <p className="text-xs opacity-70">{preset.desc}</p>
                           </button>
                         ))}
                       </div>
 
-                      <Separator />
-
                       <div>
-                        <Label className="text-xs font-display font-semibold mb-2 block">Custom Scale</Label>
+                        <Label className="text-xs font-display font-medium mb-2 block">Custom Scale</Label>
                         <div className="flex items-center gap-3">
                           <input
                             type="range"
@@ -485,8 +502,101 @@ export default function Editor() {
                             value={fontSize}
                             onChange={e => setFontSize(parseFloat(e.target.value))}
                             className="flex-1 accent-primary h-2 cursor-pointer"
+                            style={{ accentColor: 'var(--primary)' }}
                           />
                           <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(fontSize * 100)}%</span>
+                        </div>
+                      </div>
+
+                      <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
+
+                      {/* Line Spacing */}
+                      <div>
+                        <h3 className="font-display text-lg font-medium mb-1">Line Spacing</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Control vertical spacing between lines.</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {LINE_SPACING_PRESETS.map(preset => (
+                          <button
+                            key={preset.label}
+                            onClick={() => setLineSpacing(preset.value)}
+                            className="text-left p-3.5 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
+                            style={cardStyle(lineSpacing === preset.value)}
+                          >
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="font-display text-xs font-medium">{preset.label}</span>
+                              {lineSpacing === preset.value && (
+                                <div className="size-4 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                  <Check className="size-2.5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[10px] opacity-70">{preset.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-display font-medium mb-2 block">Custom Spacing</Label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min="0.7"
+                            max="1.5"
+                            step="0.01"
+                            value={lineSpacing}
+                            onChange={e => setLineSpacing(parseFloat(e.target.value))}
+                            className="flex-1 accent-primary h-2 cursor-pointer"
+                            style={{ accentColor: 'var(--primary)' }}
+                          />
+                          <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(lineSpacing * 100)}%</span>
+                        </div>
+                      </div>
+
+                      <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
+
+                      {/* Margins */}
+                      <div>
+                        <h3 className="font-display text-lg font-medium mb-1">Page Margins</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Adjust the whitespace around your content.</p>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        {MARGIN_PRESETS.map(preset => (
+                          <button
+                            key={preset.label}
+                            onClick={() => setMarginSize(preset.value)}
+                            className="text-left p-3 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
+                            style={cardStyle(marginSize === preset.value)}
+                          >
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="font-display text-xs font-medium">{preset.label}</span>
+                              {marginSize === preset.value && (
+                                <div className="size-4 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                  <Check className="size-2.5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[10px] opacity-70">{preset.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-display font-medium mb-2 block">Custom Margins</Label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min="0.4"
+                            max="1.6"
+                            step="0.01"
+                            value={marginSize}
+                            onChange={e => setMarginSize(parseFloat(e.target.value))}
+                            className="flex-1 accent-primary h-2 cursor-pointer"
+                            style={{ accentColor: 'var(--primary)' }}
+                          />
+                          <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(marginSize * 100)}%</span>
                         </div>
                       </div>
                     </div>
@@ -495,7 +605,7 @@ export default function Editor() {
                   <TabsContent value="colors" className="mt-0">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-display text-lg font-semibold mb-1">Accent Color</h3>
+                        <h3 className="font-display text-lg font-medium mb-1">Accent Color</h3>
                         <p className="text-sm text-muted-foreground">Personalize your resume with a custom accent color.</p>
                       </div>
 
@@ -504,41 +614,44 @@ export default function Editor() {
                           <button
                             key={color}
                             onClick={() => setAccentColor(color)}
-                            className="group relative aspect-square rounded-lg border-2 transition-all hover:scale-105"
+                            className="group relative aspect-square rounded-2xl transition-all hover:scale-105"
                             style={{
                               backgroundColor: color,
-                              borderColor: accentColor === color ? 'var(--foreground)' : 'transparent',
+                              border: accentColor === color ? '3px solid var(--foreground)' : '2px solid transparent',
+                              boxShadow: accentColor === color ? '0 0 0 2px var(--background)' : 'none',
                             }}
                           >
                             {accentColor === color && (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="size-2.5 rounded-full bg-white/90" />
+                                <Check className="size-4 text-white drop-shadow-md" />
                               </div>
                             )}
                           </button>
                         ))}
                       </div>
 
-                      <Separator />
+                      <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
 
                       <div>
-                        <Label className="text-xs font-display font-semibold mb-2 block">Custom Color</Label>
+                        <Label className="text-xs font-display font-medium mb-2 block">Custom Color</Label>
                         <div className="flex items-center gap-3">
                           <Input
                             type="color"
                             value={accentColor}
                             onChange={e => setAccentColor(e.target.value)}
-                            className="w-12 h-10 p-1 border-2 cursor-pointer rounded-lg"
+                            className="w-12 h-10 p-1 cursor-pointer rounded-xl"
+                            style={{ border: '2px solid var(--md3-outline-variant)' }}
                           />
                           <Input
                             value={accentColor}
                             onChange={e => setAccentColor(e.target.value)}
-                            placeholder="#18181B"
-                            className="h-10 text-sm font-mono-accent flex-1"
+                            placeholder="#006B5E"
+                            className="h-10 text-sm font-mono-accent flex-1 rounded-xl"
+                            style={{ border: '1px solid var(--md3-outline-variant)' }}
                           />
                           <div
-                            className="h-10 w-20 rounded-lg border-2 shrink-0"
-                            style={{ backgroundColor: accentColor, borderColor: 'var(--border)' }}
+                            className="h-10 w-20 rounded-xl shrink-0"
+                            style={{ backgroundColor: accentColor, border: '1px solid var(--md3-outline-variant)' }}
                           />
                         </div>
                       </div>
@@ -548,30 +661,33 @@ export default function Editor() {
               </div>
 
               {/* Auto-save indicator */}
-              <div className="border-t px-5 py-2 flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                <Save className="size-3" />
-                <span>Auto-saved to browser</span>
+              <div className="px-5 py-2.5 flex items-center gap-2 text-xs text-muted-foreground shrink-0" style={{ borderTop: '1px solid var(--md3-outline-variant)', background: 'var(--md3-surface-container-low)' }}>
+                <Save className="size-3.5" />
+                <span className="font-medium">Auto-saved to browser</span>
               </div>
             </Tabs>
           </div>
 
           {/* Right: Preview */}
-          <div className={`flex-1 flex flex-col bg-muted/30 overflow-hidden ${showPreview ? 'flex' : 'hidden lg:flex'} print:block print:bg-white`}>
+          <div className={`flex-1 flex flex-col overflow-hidden ${showPreview ? 'flex' : 'hidden lg:flex'} print:block print:bg-white`} style={{ background: 'var(--md3-surface-container)' }}>
             {/* Preview toolbar */}
-            <div className="border-b bg-background/50 backdrop-blur-sm px-4 py-2 flex items-center justify-between shrink-0 print:hidden">
+            <div className="px-4 py-2.5 flex items-center justify-between shrink-0 print:hidden" style={{ borderBottom: '1px solid var(--md3-outline-variant)', background: 'var(--md3-surface-container-low)' }}>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-display font-semibold text-muted-foreground">Preview</span>
-                <Badge variant="secondary" className="text-[10px] h-5 font-mono-accent">
+                <span className="text-xs font-display font-medium text-muted-foreground">Preview</span>
+                <span
+                  className="text-[10px] font-medium px-2.5 py-0.5 rounded-full"
+                  style={{ background: 'var(--md3-secondary-container)', color: 'var(--md3-on-secondary-container)' }}
+                >
                   {TEMPLATES.find(t => t.id === selectedTemplate)?.label}
-                </Badge>
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Button variant="ghost" size="icon" className="size-7" onClick={() => setZoom(z => Math.max(50, z - 10))}>
-                  <ZoomOut className="size-3.5" />
+                <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={() => setZoom(z => Math.max(50, z - 10))}>
+                  <ZoomOut className="size-4" />
                 </Button>
-                <span className="text-[10px] font-mono-accent text-muted-foreground w-8 text-center">{zoom}%</span>
-                <Button variant="ghost" size="icon" className="size-7" onClick={() => setZoom(z => Math.min(150, z + 10))}>
-                  <ZoomIn className="size-3.5" />
+                <span className="text-[11px] font-mono-accent text-muted-foreground w-8 text-center">{zoom}%</span>
+                <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={() => setZoom(z => Math.min(150, z + 10))}>
+                  <ZoomIn className="size-4" />
                 </Button>
               </div>
             </div>
@@ -581,9 +697,9 @@ export default function Editor() {
               <div className="p-6 lg:p-10 flex justify-center print:p-0">
                 <div
                   style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
-                  className="transition-transform duration-200 print:!transform-none"
+                  className="transition-transform duration-300 md3-motion-emphasized print:!transform-none"
                 >
-                  <div className="bg-white shadow-lg border print:shadow-none print:border-0" style={{ width: '800px', minHeight: '1131px' }}>
+                  <div className="bg-white md3-elevation-2 rounded-lg print:shadow-none print:border-0 print:rounded-none" style={{ width: '800px', minHeight: '1131px' }}>
                     <ResumePreview ref={previewRef} />
                   </div>
                 </div>
