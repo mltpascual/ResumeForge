@@ -76,7 +76,7 @@ const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
 ];
 
 const PRESET_COLORS = [
-  '#006B5E', '#1E3A5F', '#1E40AF', '#7C3AED', '#BE185D',
+  '#6750A4', '#1E3A5F', '#1E40AF', '#7C3AED', '#BE185D',
   '#B91C1C', '#C2410C', '#A16207', '#15803D', '#0F766E',
   '#4338CA', '#0369A1', '#6D28D9', '#9333EA', '#DB2777',
 ];
@@ -645,7 +645,7 @@ export default function Editor() {
                           <Input
                             value={accentColor}
                             onChange={e => setAccentColor(e.target.value)}
-                            placeholder="#006B5E"
+                            placeholder="#6750A4"
                             className="h-10 text-sm font-mono-accent flex-1 rounded-xl"
                             style={{ border: '1px solid var(--md3-outline-variant)' }}
                           />

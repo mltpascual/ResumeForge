@@ -4,9 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * DESIGN SYSTEM: Material Design 3 (Material You)
+ * DESIGN SYSTEM: Material Design 3 (Material You) — Official Baseline Colors
  * Typography: Google Sans (display/headline) + Roboto Flex (body/label) + JetBrains Mono (mono)
- * Colors: MD3 tonal palette — Primary: Deep Teal, Secondary: Warm Slate, Tertiary: Amber
+ * Colors: MD3 official baseline palette — Primary: #6750A4, Secondary: #625B71, Tertiary: #7D5260
  * Corners: Full-round (28px large, 16px medium, 12px small, 8px extra-small)
  * Elevation: MD3 tonal elevation (surface tint overlays, not shadows)
  * Motion: MD3 emphasized easing (cubic-bezier(0.2, 0, 0, 1))
@@ -57,119 +57,132 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* MD3 Light Scheme — Deep Teal Primary */
+/* MD3 Light Scheme — Official Baseline Colors (m3.material.io/styles/color/static/baseline) */
 :root {
   --radius: 12px;
   /* Surface */
-  --background: #FBF9F6;
-  --foreground: #1C1B1F;
-  /* Card = Surface Container */
-  --card: #FFFFFF;
-  --card-foreground: #1C1B1F;
+  --background: #FEF7FF;
+  --foreground: #1D1B20;
+  /* Card = Surface Container Low */
+  --card: #F7F2FA;
+  --card-foreground: #1D1B20;
   /* Popover = Surface Container High */
-  --popover: #FFFFFF;
-  --popover-foreground: #1C1B1F;
-  /* Primary: Deep Teal */
-  --primary: #006B5E;
+  --popover: #ECE6F0;
+  --popover-foreground: #1D1B20;
+  /* Primary: MD3 Baseline Purple */
+  --primary: #6750A4;
   --primary-foreground: #FFFFFF;
   /* Secondary Container */
-  --secondary: #DAE5E1;
-  --secondary-foreground: #0E1F1C;
-  /* Surface Variant */
-  --muted: #F0ECE9;
+  --secondary: #E8DEF8;
+  --secondary-foreground: #4A4458;
+  /* Surface Variant / Muted */
+  --muted: #E7E0EC;
   --muted-foreground: #49454F;
   /* Tertiary Container */
-  --accent: #FFDDB5;
-  --accent-foreground: #2A1800;
+  --accent: #FFD8E4;
+  --accent-foreground: #633B48;
   /* Error */
-  --destructive: #BA1A1A;
+  --destructive: #B3261E;
   --destructive-foreground: #FFFFFF;
   /* Outline */
-  --border: #C4C7C5;
-  --input: #C4C7C5;
-  --ring: #006B5E;
+  --border: #79747E;
+  --input: #79747E;
+  --ring: #6750A4;
   /* Chart colors */
-  --chart-1: #006B5E;
-  --chart-2: #4E6360;
-  --chart-3: #825500;
-  --chart-4: #006B5E;
-  --chart-5: #DAE5E1;
+  --chart-1: #6750A4;
+  --chart-2: #625B71;
+  --chart-3: #7D5260;
+  --chart-4: #EADDFF;
+  --chart-5: #E8DEF8;
   /* Sidebar */
-  --sidebar: #F0ECE9;
-  --sidebar-foreground: #1C1B1F;
-  --sidebar-primary: #006B5E;
+  --sidebar: #F3EDF7;
+  --sidebar-foreground: #1D1B20;
+  --sidebar-primary: #6750A4;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #DAE5E1;
-  --sidebar-accent-foreground: #0E1F1C;
-  --sidebar-border: #C4C7C5;
-  --sidebar-ring: #006B5E;
+  --sidebar-accent: #E8DEF8;
+  --sidebar-accent-foreground: #4A4458;
+  --sidebar-border: #CAC4D0;
+  --sidebar-ring: #6750A4;
 
-  /* MD3 custom properties */
-  --md3-surface-tint: #006B5E;
+  /* MD3 custom properties — Official Baseline */
+  --md3-surface-tint: #6750A4;
+  --md3-surface-dim: #DED8E1;
+  --md3-surface-bright: #FEF7FF;
   --md3-surface-container-lowest: #FFFFFF;
-  --md3-surface-container-low: #F7F3F0;
-  --md3-surface-container: #F0ECE9;
-  --md3-surface-container-high: #EBE7E4;
-  --md3-surface-container-highest: #E5E1DE;
+  --md3-surface-container-low: #F7F2FA;
+  --md3-surface-container: #F3EDF7;
+  --md3-surface-container-high: #ECE6F0;
+  --md3-surface-container-highest: #E6E0E9;
   --md3-on-surface-variant: #49454F;
   --md3-outline-variant: #CAC4D0;
-  --md3-primary-container: #6FF7E0;
-  --md3-on-primary-container: #00201B;
-  --md3-secondary-container: #DAE5E1;
-  --md3-on-secondary-container: #0E1F1C;
-  --md3-tertiary-container: #FFDDB5;
-  --md3-on-tertiary-container: #2A1800;
+  --md3-primary-container: #EADDFF;
+  --md3-on-primary-container: #4F378B;
+  --md3-secondary-container: #E8DEF8;
+  --md3-on-secondary-container: #4A4458;
+  --md3-tertiary: #7D5260;
+  --md3-tertiary-container: #FFD8E4;
+  --md3-on-tertiary-container: #633B48;
+  --md3-inverse-surface: #322F35;
+  --md3-inverse-on-surface: #F5EFF7;
+  --md3-inverse-primary: #D0BCFF;
 }
 
-/* MD3 Dark Scheme */
+/* MD3 Dark Scheme — Official Baseline Colors (m3.material.io/styles/color/static/baseline) */
 .dark {
-  --background: #1C1B1F;
-  --foreground: #E6E1E5;
-  --card: #2B2930;
-  --card-foreground: #E6E1E5;
+  --background: #141218;
+  --foreground: #E6E0E9;
+  --card: #1D1B20;
+  --card-foreground: #E6E0E9;
   --popover: #2B2930;
-  --popover-foreground: #E6E1E5;
-  --primary: #4EDBC4;
-  --primary-foreground: #003730;
-  --secondary: #BEC9C5;
-  --secondary-foreground: #293431;
-  --muted: #36343B;
+  --popover-foreground: #E6E0E9;
+  --primary: #D0BCFF;
+  --primary-foreground: #381E72;
+  --secondary: #CCC2DC;
+  --secondary-foreground: #332D41;
+  --muted: #49454F;
   --muted-foreground: #CAC4D0;
-  --accent: #F0BF82;
-  --accent-foreground: #462B00;
-  --destructive: #FFB4AB;
-  --destructive-foreground: #690005;
-  --border: #49454F;
-  --input: #49454F;
-  --ring: #4EDBC4;
-  --chart-1: #4EDBC4;
-  --chart-2: #A2CDCA;
-  --chart-3: #F0BF82;
-  --chart-4: #4EDBC4;
-  --chart-5: #36343B;
-  --sidebar: #2B2930;
-  --sidebar-foreground: #E6E1E5;
-  --sidebar-primary: #4EDBC4;
-  --sidebar-primary-foreground: #003730;
-  --sidebar-accent: #36343B;
-  --sidebar-accent-foreground: #E6E1E5;
+  --accent: #EFB8C8;
+  --accent-foreground: #492532;
+  --destructive: #F2B8B5;
+  --destructive-foreground: #601410;
+  --border: #938F99;
+  --input: #938F99;
+  --ring: #D0BCFF;
+  --chart-1: #D0BCFF;
+  --chart-2: #CCC2DC;
+  --chart-3: #EFB8C8;
+  --chart-4: #EADDFF;
+  --chart-5: #4A4458;
+  --sidebar: #1D1B20;
+  --sidebar-foreground: #E6E0E9;
+  --sidebar-primary: #D0BCFF;
+  --sidebar-primary-foreground: #381E72;
+  --sidebar-accent: #4A4458;
+  --sidebar-accent-foreground: #E8DEF8;
   --sidebar-border: #49454F;
-  --sidebar-ring: #4EDBC4;
+  --sidebar-ring: #D0BCFF;
 
-  --md3-surface-tint: #4EDBC4;
-  --md3-surface-container-lowest: #0E0D11;
-  --md3-surface-container-low: #1C1B1F;
+  /* MD3 custom properties — Official Baseline Dark */
+  --md3-surface-tint: #D0BCFF;
+  --md3-surface-dim: #141218;
+  --md3-surface-bright: #3B383E;
+  --md3-surface-container-lowest: #0F0D13;
+  --md3-surface-container-low: #1D1B20;
   --md3-surface-container: #211F26;
   --md3-surface-container-high: #2B2930;
   --md3-surface-container-highest: #36343B;
   --md3-on-surface-variant: #CAC4D0;
   --md3-outline-variant: #49454F;
-  --md3-primary-container: #005047;
-  --md3-on-primary-container: #6FF7E0;
-  --md3-secondary-container: #3F4A47;
-  --md3-on-secondary-container: #DAE5E1;
-  --md3-tertiary-container: #5F4100;
-  --md3-on-tertiary-container: #FFDDB5;
+  --md3-primary-container: #4F378B;
+  --md3-on-primary-container: #EADDFF;
+  --md3-secondary-container: #4A4458;
+  --md3-on-secondary-container: #E8DEF8;
+  --md3-tertiary: #EFB8C8;
+  --md3-tertiary-container: #633B48;
+  --md3-on-tertiary-container: #FFD8E4;
+  --md3-inverse-surface: #E6E0E9;
+  --md3-inverse-on-surface: #322F35;
+  --md3-inverse-primary: #6750A4;
 }
 
 @layer base {

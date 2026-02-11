@@ -104,7 +104,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     loadFromStorage(SECTIONS_KEY, DEFAULT_SECTION_ORDER)
   );
   const [accentColor, setAccentColorState] = useState<string>(() =>
-    loadFromStorage(ACCENT_KEY, '#18181B')
+    loadFromStorage(ACCENT_KEY, '#6750A4')
   );
   const [selectedFontId, setSelectedFontIdState] = useState<string>(() =>
     loadFromStorage(FONT_KEY, 'default')
