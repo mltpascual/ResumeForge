@@ -100,68 +100,64 @@ function MiniResumePreview({ Component, accent }: { Component: React.ComponentTy
   );
 }
 
-/** Large resume preview for the lightbox modal */
+/** Large resume preview for the lightbox modal — fixed-size paper centered in viewport */
 function LargeResumePreview({ Component, accent }: { Component: React.ComponentType<any>; accent: string }) {
   const defaultFont = useMemo(() => FONT_PAIRINGS[0], []);
   const sectionOrder = useMemo(() => DEFAULT_SECTION_ORDER, []);
-  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate scale based on available viewport height (minus top bar ~72px and dots ~48px)
   const [scale, setScale] = useState(0.6);
 
   useEffect(() => {
     const updateScale = () => {
-      if (containerRef.current) {
-        const containerHeight = containerRef.current.offsetHeight;
-        const heightScale = containerHeight / 1123;
-        const containerWidth = containerRef.current.offsetWidth;
-        const widthScale = containerWidth / 793.7;
-        setScale(Math.min(heightScale, widthScale));
-      }
+      const availH = window.innerHeight - 140; // top bar + dots + padding
+      const availW = window.innerWidth - 160; // side arrows + padding
+      const hScale = availH / 1123;
+      const wScale = availW / 793.7;
+      setScale(Math.min(hScale, wScale, 0.85));
     };
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
+  const paperW = 793.7 * scale;
+  const paperH = 1123 * scale;
+
   return (
     <div
-      ref={containerRef}
-      className="w-full h-full flex items-start justify-center overflow-auto"
-      style={{ padding: '16px' }}
+      style={{
+        width: `${paperW}px`,
+        height: `${paperH}px`,
+        flexShrink: 0,
+        position: 'relative',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)',
+      }}
     >
       <div
         style={{
-          width: `${793.7 * scale}px`,
-          height: `${1123 * scale}px`,
-          flexShrink: 0,
-          position: 'relative',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)',
+          width: '210mm',
+          minHeight: '297mm',
+          backgroundColor: '#ffffff',
+          transformOrigin: 'top left',
+          transform: `scale(${scale})`,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
         }}
       >
-        <div
-          style={{
-            width: '210mm',
-            minHeight: '297mm',
-            backgroundColor: '#ffffff',
-            transformOrigin: 'top left',
-            transform: `scale(${scale})`,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-          }}
-        >
-          <Component
-            data={sampleResumeData}
-            sectionOrder={sectionOrder}
-            accent={accent}
-            font={defaultFont}
-            fontSize={1}
-            lineSpacing={1}
-            marginSize={1}
-          />
-        </div>
+        <Component
+          data={sampleResumeData}
+          sectionOrder={sectionOrder}
+          accent={accent}
+          font={defaultFont}
+          fontSize={1}
+          lineSpacing={1}
+          marginSize={1}
+        />
       </div>
     </div>
   );
@@ -283,7 +279,7 @@ function TemplateLightbox({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.92 }}
               transition={{ duration: 0.35, delay: 0.08, ease: [0.05, 0.7, 0.1, 1] }}
-              className="flex-1 min-h-0 flex items-center justify-center relative"
+              className="flex-1 min-h-0 flex items-center justify-center relative pointer-events-none"
             >
               {/* Left arrow */}
               <button
@@ -294,9 +290,12 @@ function TemplateLightbox({
                 <ChevronLeft className="size-6 text-white" />
               </button>
 
-              {/* Resume paper — clicking outside it (on the scrim) closes the modal */}
-              <div className="w-full h-full pointer-events-auto" onClick={onClose}>
-                <div onClick={(e) => e.stopPropagation()} className="w-full h-full">
+              {/* Resume paper — centered, clicking around it closes the modal */}
+              <div
+                className="flex-1 min-h-0 w-full flex items-center justify-center pointer-events-auto"
+                onClick={onClose}
+              >
+                <div onClick={(e) => e.stopPropagation()}>
                   <LargeResumePreview Component={currentTemplate.Component} accent={currentTemplate.accent} />
                 </div>
               </div>
