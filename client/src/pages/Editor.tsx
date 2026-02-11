@@ -335,13 +335,13 @@ export default function Editor() {
           <div className={`w-full lg:w-[560px] xl:w-[620px] flex flex-col shrink-0 overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'} print:hidden`} style={{ borderRight: '1px solid var(--md3-outline-variant)' }}>
             <Tabs value={activeSection} onValueChange={setActiveSection} className="flex flex-col h-full overflow-hidden">
               {/* MD3 Navigation Tabs */}
-              <div className="shrink-0 overflow-x-auto px-3 pt-2 pb-0" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
+              <div className="shrink-0 overflow-x-auto px-3 pt-2 pb-2" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
                 <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start">
                   {INFO_TABS.map(tab => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-primary-container)] data-[state=active]:text-[var(--md3-on-primary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all"
+                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-primary-container)] data-[state=active]:text-[var(--md3-on-primary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all" style={{marginBottom: '5px'}}
                     >
                       <tab.icon className="size-3.5" />
                       <span className="hidden sm:inline">{tab.label}</span>
@@ -356,7 +356,7 @@ export default function Editor() {
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-secondary-container)] data-[state=active]:text-[var(--md3-on-secondary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all"
+                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-secondary-container)] data-[state=active]:text-[var(--md3-on-secondary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all" style={{marginBottom: '5px'}}
                     >
                       <tab.icon className="size-3.5" />
                       <span className="hidden sm:inline">{tab.label}</span>
