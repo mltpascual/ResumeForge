@@ -26,6 +26,7 @@ import CertificationsForm from '@/components/forms/CertificationsForm';
 import ResumePreview from '@/components/preview/ResumePreview';
 import DraggableSections from '@/components/DraggableSections';
 import ResumeCompleteness from '@/components/ResumeCompleteness';
+import ATSScoreChecker from '@/components/ATSScoreChecker';
 import type { TemplateId } from '@/types/resume';
 
 const INFO_TABS = [
@@ -775,7 +776,11 @@ export default function Editor() {
                   <Save className="size-3.5" />
                   <span className="font-medium">Auto-saved to browser</span>
                 </div>
-                <ResumeCompleteness />
+                <div className="flex items-center gap-4">
+                  <ResumeCompleteness />
+                  <div className="w-px h-4" style={{ background: 'var(--md3-outline-variant)' }} />
+                  <ATSScoreChecker />
+                </div>
               </div>
             </Tabs>
           </div>
