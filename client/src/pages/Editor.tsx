@@ -15,7 +15,7 @@ import {
   ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
   Wrench, FolderOpen, Award, Save, ArrowUpDown,
   Upload, Palette, Printer, Type, LayoutTemplate, ALargeSmall,
-  Check, ChevronUp, Eye, X,
+  Check, ChevronUp, Eye, X, Monitor,
 } from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
@@ -36,6 +36,7 @@ import ResumeProfiles from '@/components/ResumeProfiles';
 import DocxExport from '@/components/DocxExport';
 import WordCount from '@/components/WordCount';
 import SectionTips from '@/components/SectionTips';
+import ATSSimulator from '@/components/ATSSimulator';
 import type { TemplateId } from '@/types/resume';
 
 const INFO_TABS = [
@@ -166,6 +167,7 @@ export default function Editor() {
   const [exporting, setExporting] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [recruiterMode, setRecruiterMode] = useState(false);
+  const [atsSimMode, setAtsSimMode] = useState(false);
 
   // Track scroll position for scroll-to-top button
   useEffect(() => {
@@ -912,21 +914,32 @@ export default function Editor() {
               <div className="flex items-center gap-3">
                 <Eye className="size-5" style={{ color: 'var(--md3-primary)' }} />
                 <span className="font-display text-sm font-medium">Recruiter Preview</span>
-                <span className="text-xs text-muted-foreground">Full-width read-only view</span>
+                <span className="text-xs text-muted-foreground hidden sm:inline">Full-width read-only view</span>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant={atsSimMode ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setAtsSimMode(!atsSimMode)}
+                  className="gap-1.5 h-9 text-xs rounded-full px-3"
+                  style={atsSimMode ? { background: 'var(--md3-primary)', color: 'var(--md3-on-primary)' } : {}}
+                >
+                  <Monitor className="size-4" />
+                  <span className="font-medium hidden sm:inline">ATS Simulation</span>
+                </Button>
+                <div className="w-px h-6 mx-1" style={{ background: 'var(--md3-outline-variant)' }} />
                 <Button variant="ghost" size="sm" onClick={handleExportPDF} disabled={exporting} className="gap-1.5 h-9 text-xs rounded-full px-3">
                   <Download className="size-4" />
-                  <span className="font-medium">{exporting ? 'Exporting...' : 'Export PDF'}</span>
+                  <span className="font-medium hidden sm:inline">{exporting ? 'Exporting...' : 'Export PDF'}</span>
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handlePrint} className="gap-1.5 h-9 text-xs rounded-full px-3">
                   <Printer className="size-4" />
-                  <span className="font-medium">Print</span>
+                  <span className="font-medium hidden sm:inline">Print</span>
                 </Button>
                 <div className="w-px h-6 mx-1" style={{ background: 'var(--md3-outline-variant)' }} />
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={() => setRecruiterMode(false)}>
+                    <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={() => { setRecruiterMode(false); setAtsSimMode(false); }}>
                       <X className="size-5" />
                     </Button>
                   </TooltipTrigger>
@@ -935,20 +948,28 @@ export default function Editor() {
               </div>
             </div>
 
-            {/* Recruiter mode resume */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="py-10 flex justify-center">
-                <motion.div
-                  initial={{ scale: 0.95, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.95, y: 20 }}
-                  transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-                >
-                  <div className="bg-white md3-elevation-3 rounded-lg" style={{ width: '800px', minHeight: '1131px' }}>
-                    <ResumePreview />
-                  </div>
-                </motion.div>
+            {/* Recruiter mode content — resume + optional ATS simulation panel */}
+            <div className="flex-1 flex overflow-hidden">
+              {/* Resume preview */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="py-10 flex justify-center">
+                  <motion.div
+                    initial={{ scale: 0.95, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.95, y: 20 }}
+                    transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+                  >
+                    <div className="bg-white md3-elevation-3 rounded-lg" style={{ width: '800px', minHeight: '1131px' }}>
+                      <ResumePreview />
+                    </div>
+                  </motion.div>
+                </div>
               </div>
+
+              {/* ATS Simulation Side Panel */}
+              <AnimatePresence>
+                {atsSimMode && <ATSSimulator isVisible={atsSimMode} />}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
