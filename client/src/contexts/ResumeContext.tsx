@@ -1,5 +1,27 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { type ResumeData, type TemplateId, defaultResumeData, sampleResumeData } from '@/types/resume';
+
+const STORAGE_KEY = 'resumeforge_data';
+const TEMPLATE_KEY = 'resumeforge_template';
+const SECTIONS_KEY = 'resumeforge_sections';
+
+export type SectionId = 'experiences' | 'education' | 'skills' | 'projects' | 'certifications';
+
+export const DEFAULT_SECTION_ORDER: SectionId[] = [
+  'experiences',
+  'education',
+  'skills',
+  'projects',
+  'certifications',
+];
+
+export const SECTION_LABELS: Record<SectionId, string> = {
+  experiences: 'Experience',
+  education: 'Education',
+  skills: 'Skills',
+  projects: 'Projects',
+  certifications: 'Certifications',
+};
 
 interface ResumeContextType {
   resumeData: ResumeData;
@@ -26,6 +48,8 @@ interface ResumeContextType {
   clearAllData: () => void;
   activeSection: string;
   setActiveSection: (section: string) => void;
+  sectionOrder: SectionId[];
+  setSectionOrder: (order: SectionId[]) => void;
 }
 
 const ResumeContext = createContext<ResumeContextType | null>(null);
@@ -33,10 +57,47 @@ const ResumeContext = createContext<ResumeContextType | null>(null);
 let idCounter = 100;
 const generateId = () => String(++idCounter);
 
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    if (stored) return JSON.parse(stored);
+  } catch {
+    // ignore parse errors
+  }
+  return fallback;
+}
+
 export function ResumeProvider({ children }: { children: ReactNode }) {
-  const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData);
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic');
+  const [resumeData, setResumeData] = useState<ResumeData>(() =>
+    loadFromStorage(STORAGE_KEY, defaultResumeData)
+  );
+  const [selectedTemplate, setSelectedTemplateState] = useState<TemplateId>(() =>
+    loadFromStorage(TEMPLATE_KEY, 'classic' as TemplateId)
+  );
   const [activeSection, setActiveSection] = useState('personal');
+  const [sectionOrder, setSectionOrderState] = useState<SectionId[]>(() =>
+    loadFromStorage(SECTIONS_KEY, DEFAULT_SECTION_ORDER)
+  );
+
+  // Auto-save resume data
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(resumeData));
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [resumeData]);
+
+  // Auto-save template
+  const setSelectedTemplate = useCallback((id: TemplateId) => {
+    setSelectedTemplateState(id);
+    localStorage.setItem(TEMPLATE_KEY, JSON.stringify(id));
+  }, []);
+
+  // Auto-save section order
+  const setSectionOrder = useCallback((order: SectionId[]) => {
+    setSectionOrderState(order);
+    localStorage.setItem(SECTIONS_KEY, JSON.stringify(order));
+  }, []);
 
   const updatePersonalInfo = useCallback((field: string, value: string) => {
     setResumeData(prev => ({
@@ -49,14 +110,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     setResumeData(prev => ({
       ...prev,
       experiences: [...prev.experiences, {
-        id: generateId(),
-        company: '',
-        position: '',
-        location: '',
-        startDate: '',
-        endDate: '',
-        current: false,
-        description: '',
+        id: generateId(), company: '', position: '', location: '',
+        startDate: '', endDate: '', current: false, description: '',
       }],
     }));
   }, []);
@@ -81,14 +136,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     setResumeData(prev => ({
       ...prev,
       education: [...prev.education, {
-        id: generateId(),
-        institution: '',
-        degree: '',
-        field: '',
-        startDate: '',
-        endDate: '',
-        gpa: '',
-        description: '',
+        id: generateId(), institution: '', degree: '', field: '',
+        startDate: '', endDate: '', gpa: '', description: '',
       }],
     }));
   }, []);
@@ -113,9 +162,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     setResumeData(prev => ({
       ...prev,
       skills: [...prev.skills, {
-        id: generateId(),
-        name: '',
-        level: 'intermediate' as const,
+        id: generateId(), name: '', level: 'intermediate' as const,
       }],
     }));
   }, []);
@@ -140,11 +187,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     setResumeData(prev => ({
       ...prev,
       projects: [...prev.projects, {
-        id: generateId(),
-        name: '',
-        description: '',
-        technologies: '',
-        link: '',
+        id: generateId(), name: '', description: '', technologies: '', link: '',
       }],
     }));
   }, []);
@@ -169,11 +212,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     setResumeData(prev => ({
       ...prev,
       certifications: [...prev.certifications, {
-        id: generateId(),
-        name: '',
-        issuer: '',
-        date: '',
-        link: '',
+        id: generateId(), name: '', issuer: '', date: '', link: '',
       }],
     }));
   }, []);
@@ -200,34 +239,22 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
 
   const clearAllData = useCallback(() => {
     setResumeData(defaultResumeData);
+    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return (
     <ResumeContext.Provider value={{
-      resumeData,
-      setResumeData,
+      resumeData, setResumeData,
       updatePersonalInfo,
-      addExperience,
-      updateExperience,
-      removeExperience,
-      addEducation,
-      updateEducation,
-      removeEducation,
-      addSkill,
-      updateSkill,
-      removeSkill,
-      addProject,
-      updateProject,
-      removeProject,
-      addCertification,
-      updateCertification,
-      removeCertification,
-      selectedTemplate,
-      setSelectedTemplate,
-      loadSampleData,
-      clearAllData,
-      activeSection,
-      setActiveSection,
+      addExperience, updateExperience, removeExperience,
+      addEducation, updateEducation, removeEducation,
+      addSkill, updateSkill, removeSkill,
+      addProject, updateProject, removeProject,
+      addCertification, updateCertification, removeCertification,
+      selectedTemplate, setSelectedTemplate,
+      loadSampleData, clearAllData,
+      activeSection, setActiveSection,
+      sectionOrder, setSectionOrder,
     }}>
       {children}
     </ResumeContext.Provider>

@@ -1,380 +1,343 @@
-/*
- * DESIGN: Minimalist / Severe — Editor Page
- * Pure white background, black text, hairline borders
- * HORIZONTAL TABS across the top for section navigation
- * Form below tabs on the left, preview on the right
- * No shadows, no rounded corners, no color
- */
-
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link } from 'wouter';
 import { useResume } from '@/contexts/ResumeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import ResumePreview from '@/components/preview/ResumePreview';
+import {
+  ArrowLeft, Download, FileText, Trash2, Moon, Sun,
+  ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
+  Wrench, FolderOpen, Award, Save, ArrowUpDown,
+} from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
 import EducationForm from '@/components/forms/EducationForm';
 import SkillsForm from '@/components/forms/SkillsForm';
 import ProjectsForm from '@/components/forms/ProjectsForm';
 import CertificationsForm from '@/components/forms/CertificationsForm';
-import { type TemplateId } from '@/types/resume';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ArrowLeft,
-  Download,
-  ZoomIn,
-  ZoomOut,
-  Layout,
-  Sparkles,
-  Trash2,
-  Eye,
-  PenLine,
-} from 'lucide-react';
+import ResumePreview from '@/components/preview/ResumePreview';
+import DraggableSections from '@/components/DraggableSections';
+import type { TemplateId } from '@/types/resume';
 
-const sections = [
-  { id: 'personal', label: 'Personal' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'education', label: 'Education' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'certifications', label: 'Certifications' },
+const TABS = [
+  { value: 'personal', label: 'Personal', icon: User },
+  { value: 'experience', label: 'Experience', icon: Briefcase },
+  { value: 'education', label: 'Education', icon: GraduationCap },
+  { value: 'skills', label: 'Skills', icon: Wrench },
+  { value: 'projects', label: 'Projects', icon: FolderOpen },
+  { value: 'certifications', label: 'Certifications', icon: Award },
+  { value: 'order', label: 'Order', icon: ArrowUpDown },
 ];
 
-const templateOptions: { id: TemplateId; name: string }[] = [
-  { id: 'classic', name: 'Classic' },
-  { id: 'modern', name: 'Modern' },
-  { id: 'executive', name: 'Executive' },
+const TEMPLATES: { id: TemplateId; label: string }[] = [
+  { id: 'classic', label: 'Classic' },
+  { id: 'modern', label: 'Modern' },
+  { id: 'executive', label: 'Executive' },
 ];
 
 export default function Editor() {
-  const { activeSection, setActiveSection, selectedTemplate, setSelectedTemplate, loadSampleData, clearAllData } = useResume();
+  const {
+    loadSampleData, clearAllData,
+    selectedTemplate, setSelectedTemplate,
+    activeSection, setActiveSection,
+  } = useResume();
+  const { theme, toggleTheme } = useTheme();
+
+  const [zoom, setZoom] = useState(75);
+  const [showPreview, setShowPreview] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
-  const [previewScale, setPreviewScale] = useState(0.5);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
-
-  const updateScale = useCallback(() => {
-    if (previewContainerRef.current) {
-      const containerWidth = previewContainerRef.current.clientWidth;
-      const resumeWidth = 794;
-      const padding = 48;
-      const scale = Math.min((containerWidth - padding) / resumeWidth, 0.75);
-      setPreviewScale(Math.max(scale, 0.3));
-    }
-  }, []);
-
-  useEffect(() => {
-    updateScale();
-    window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
-  }, [updateScale]);
-
-  useEffect(() => {
-    if (mobileView === 'preview') {
-      setTimeout(updateScale, 100);
-    }
-  }, [mobileView, updateScale]);
-
-  const [isExporting, setIsExporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const handleExportPDF = useCallback(async () => {
-    const el = document.getElementById('resume-preview');
-    if (!el || isExporting) return;
-
-    setIsExporting(true);
-    toast.info('Generating PDF...', { duration: 3000 });
+    const el = previewRef.current;
+    if (!el) return;
+    setExporting(true);
 
     try {
-      const { jsPDF } = await import('jspdf');
+      // Use jsPDF + html2canvas for reliable PDF generation
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ]);
 
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.left = '-10000px';
-      iframe.style.top = '0';
-      iframe.style.width = '794px';
-      iframe.style.height = '1123px';
-      iframe.style.border = 'none';
-      document.body.appendChild(iframe);
+      // Create a clone at full size for rendering
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.transform = 'none';
+      clone.style.width = '800px';
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.background = 'white';
+      clone.style.color = '#09090B';
+      document.body.appendChild(clone);
 
-      const iframeDoc = iframe.contentDocument!;
-      iframeDoc.open();
-      iframeDoc.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { background: white; font-family: 'Archivo', sans-serif; }
-              .flex { display: flex; }
-              .gap-1 { gap: 4px; }
-            </style>
-          </head>
-          <body>${el.outerHTML}</body>
-        </html>
-      `);
-      iframeDoc.close();
+      // Resolve all CSS custom properties to computed values
+      const resolveStyles = (element: HTMLElement) => {
+        const computed = window.getComputedStyle(element);
+        const propsToResolve = ['color', 'background-color', 'border-color', 'background'];
+        propsToResolve.forEach(prop => {
+          const val = computed.getPropertyValue(prop);
+          if (val && val.includes('oklch')) {
+            // Convert oklch to a fallback
+            element.style.setProperty(prop, prop.includes('background') ? '#ffffff' : '#09090B');
+          }
+        });
+        Array.from(element.children).forEach(child => {
+          if (child instanceof HTMLElement) resolveStyles(child);
+        });
+      };
+      resolveStyles(clone);
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      const html2canvas = (await import('html2canvas')).default;
-      const target = iframeDoc.body.firstElementChild as HTMLElement;
-
-      const canvas = await html2canvas(target, {
+      const canvas = await html2canvas(clone, {
         scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: '#ffffff',
-        windowWidth: 794,
+        logging: false,
+        width: 800,
+        windowWidth: 800,
       });
 
-      document.body.removeChild(iframe);
+      document.body.removeChild(clone);
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-
+      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      if (imgHeight > pdfHeight) {
-        const ratio = pdfHeight / imgHeight;
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth * ratio + (pdfWidth - imgWidth * ratio) / 2, pdfHeight);
-      } else {
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
       }
 
       pdf.save('resume.pdf');
-      toast.success('PDF downloaded successfully!');
+      toast.success('PDF downloaded successfully');
     } catch (err) {
       console.error('PDF export error:', err);
-      toast.error('Failed to generate PDF. Please try again.');
+      toast.error('PDF export failed. Please try again.');
     } finally {
-      setIsExporting(false);
+      setExporting(false);
     }
-  }, [isExporting]);
-
-  const renderForm = () => {
-    switch (activeSection) {
-      case 'personal': return <PersonalInfoForm />;
-      case 'experience': return <ExperienceForm />;
-      case 'education': return <EducationForm />;
-      case 'skills': return <SkillsForm />;
-      case 'projects': return <ProjectsForm />;
-      case 'certifications': return <CertificationsForm />;
-      default: return <PersonalInfoForm />;
-    }
-  };
+  }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-white text-[#09090B]" style={{ fontFamily: "'Archivo', sans-serif" }}>
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Top Bar */}
-      <header className="h-12 border-b border-[#E4E4E7] flex items-center justify-between px-4 md:px-6 shrink-0">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <span className="flex items-center gap-2 text-[#71717A] hover:text-[#09090B] transition-opacity duration-200">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="font-display text-sm font-bold tracking-tight hidden sm:inline">ResumeForge</span>
-            </span>
-          </Link>
-        </div>
+      <header className="border-b bg-background/95 backdrop-blur-sm shrink-0">
+        <div className="flex items-center justify-between h-14 px-4 lg:px-6">
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="size-5" />
+              </Button>
+            </Link>
+            <Separator orientation="vertical" className="h-6" />
+            <span className="font-display text-lg font-bold tracking-tight">ResumeForge</span>
+          </div>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              loadSampleData();
-              toast.success('Sample data loaded');
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#71717A] hover:text-[#09090B] transition-opacity duration-200"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline font-mono-accent text-[10px] tracking-wider uppercase">Sample</span>
-          </button>
-          <button
-            onClick={() => {
-              clearAllData();
-              toast.info('Data cleared');
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#71717A] hover:text-[#DC2626] transition-opacity duration-200"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline font-mono-accent text-[10px] tracking-wider uppercase">Clear</span>
-          </button>
-          <div className="w-px h-5 bg-[#E4E4E7] mx-1 hidden sm:block" />
-          <button
-            onClick={() => setShowTemplates(!showTemplates)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#71717A] hover:text-[#09090B] transition-opacity duration-200"
-          >
-            <Layout className="w-3.5 h-3.5" />
-            <span className="font-mono-accent text-[10px] tracking-wider uppercase">
-              {templateOptions.find(t => t.id === selectedTemplate)?.name}
-            </span>
-          </button>
-          <div className="w-px h-5 bg-[#E4E4E7] mx-1 hidden sm:block" />
-          <button
-            onClick={handleExportPDF}
-            disabled={isExporting}
-            className="flex items-center gap-1.5 bg-[#09090B] text-white px-4 py-1.5 text-xs hover:opacity-70 transition-opacity duration-200 disabled:opacity-40"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span className="font-mono-accent text-[10px] tracking-wider uppercase">
-              {isExporting ? 'Exporting...' : 'Export PDF'}
-            </span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" onClick={() => { loadSampleData(); toast.success('Sample data loaded'); }} className="gap-2">
+                  <FileText className="size-4" />
+                  <span className="hidden sm:inline">Sample</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Load sample data</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" onClick={() => { clearAllData(); toast.info('Data cleared'); }} className="gap-2">
+                  <Trash2 className="size-4" />
+                  <span className="hidden sm:inline">Clear</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Clear all data</TooltipContent>
+            </Tooltip>
+
+            <Separator orientation="vertical" className="h-6" />
+
+            {/* Template Selector */}
+            <div className="hidden md:flex items-center gap-1 bg-muted p-1 rounded-lg">
+              {TEMPLATES.map(t => (
+                <Button
+                  key={t.id}
+                  variant={selectedTemplate === t.id ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedTemplate(t.id)}
+                  className="text-xs font-mono-accent h-7 px-3"
+                >
+                  {t.label}
+                </Button>
+              ))}
+            </div>
+
+            <Separator orientation="vertical" className="h-6 hidden md:block" />
+
+            {toggleTheme && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                    {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Toggle {theme === 'dark' ? 'light' : 'dark'} mode</TooltipContent>
+              </Tooltip>
+            )}
+
+            <Button
+              size="sm"
+              onClick={handleExportPDF}
+              disabled={exporting}
+              className="gap-2 font-display"
+            >
+              <Download className="size-4" />
+              <span className="hidden sm:inline">{exporting ? 'Exporting...' : 'Export PDF'}</span>
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Template Selector Dropdown */}
-      <AnimatePresence>
-        {showTemplates && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="border-b border-[#E4E4E7] overflow-hidden"
-          >
-            <div className="px-6 py-3 flex gap-0">
-              {templateOptions.map((tmpl, i) => (
-                <button
-                  key={tmpl.id}
-                  onClick={() => {
-                    setSelectedTemplate(tmpl.id);
-                    setShowTemplates(false);
-                  }}
-                  className={`px-5 py-2 text-xs transition-opacity duration-200 border-b-2 ${
-                    selectedTemplate === tmpl.id
-                      ? 'border-[#09090B] text-[#09090B] font-medium'
-                      : 'border-transparent text-[#71717A] hover:text-[#09090B]'
-                  }`}
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}
-                >
-                  {tmpl.name}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* HORIZONTAL SECTION TABS */}
-      <div className="border-b border-[#E4E4E7] shrink-0 overflow-x-auto">
-        <div className="flex px-4 md:px-6">
-          {sections.map((section, i) => (
-            <button
-              key={section.id}
-              onClick={() => setActiveSection(section.id)}
-              className={`relative px-4 md:px-5 py-3 text-xs transition-colors duration-200 whitespace-nowrap ${
-                activeSection === section.id
-                  ? 'text-[#09090B]'
-                  : 'text-[#A1A1AA] hover:text-[#71717A]'
-              }`}
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}
-            >
-              <span className="mr-2 text-[#D4D4D8]">{String(i + 1).padStart(2, '0')}</span>
-              {section.label}
-              {activeSection === section.id && (
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-px bg-[#09090B]"
-                  layoutId="activeTab"
-                  transition={{ duration: 0.2 }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile View Toggle */}
-      <div className="lg:hidden flex border-b border-[#E4E4E7] shrink-0">
+      {/* Mobile toggle */}
+      <div className="lg:hidden flex border-b">
         <button
-          onClick={() => setMobileView('form')}
-          className={`flex-1 py-2 text-xs flex items-center justify-center gap-2 transition-colors duration-200 ${
-            mobileView === 'form' ? 'text-[#09090B] border-b border-[#09090B]' : 'text-[#A1A1AA]'
-          }`}
-          style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+          onClick={() => setShowPreview(false)}
+          className={`flex-1 py-3 text-sm font-display font-semibold text-center transition-colors ${!showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
         >
-          <PenLine className="w-3.5 h-3.5" />
           Editor
         </button>
         <button
-          onClick={() => setMobileView('preview')}
-          className={`flex-1 py-2 text-xs flex items-center justify-center gap-2 transition-colors duration-200 ${
-            mobileView === 'preview' ? 'text-[#09090B] border-b border-[#09090B]' : 'text-[#A1A1AA]'
-          }`}
-          style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+          onClick={() => setShowPreview(true)}
+          className={`flex-1 py-3 text-sm font-display font-semibold text-center transition-colors ${showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
         >
-          <Eye className="w-3.5 h-3.5" />
           Preview
         </button>
       </div>
 
+      {/* Mobile template selector */}
+      <div className="md:hidden border-b px-4 py-2 flex items-center gap-1 bg-muted/50 overflow-x-auto">
+        {TEMPLATES.map(t => (
+          <Button
+            key={t.id}
+            variant={selectedTemplate === t.id ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setSelectedTemplate(t.id)}
+            className="text-xs font-mono-accent h-7 px-3 shrink-0"
+          >
+            {t.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Form Panel */}
-        <div className={`lg:w-[480px] border-r border-[#E4E4E7] flex flex-col shrink-0 ${
-          mobileView === 'form' ? 'flex w-full lg:w-[480px]' : 'hidden lg:flex'
-        }`}>
-          <ScrollArea className="flex-1">
-            <div className="p-6 md:p-8">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSection}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  {renderForm()}
-                </motion.div>
-              </AnimatePresence>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left: Form Editor */}
+        <div className={`w-full lg:w-[520px] xl:w-[580px] border-r flex flex-col shrink-0 ${showPreview ? 'hidden lg:flex' : 'flex'}`}>
+          <Tabs value={activeSection} onValueChange={setActiveSection} className="flex flex-col h-full">
+            {/* Horizontal Tabs */}
+            <div className="border-b px-4 pt-3 pb-0 shrink-0 overflow-x-auto">
+              <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start">
+                {TABS.map(tab => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="gap-2 px-4 py-2.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg"
+                  >
+                    <tab.icon className="size-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
-          </ScrollArea>
+
+            {/* Form Content */}
+            <ScrollArea className="flex-1">
+              <div className="p-6 lg:p-8">
+                <TabsContent value="personal" className="mt-0">
+                  <PersonalInfoForm />
+                </TabsContent>
+                <TabsContent value="experience" className="mt-0">
+                  <ExperienceForm />
+                </TabsContent>
+                <TabsContent value="education" className="mt-0">
+                  <EducationForm />
+                </TabsContent>
+                <TabsContent value="skills" className="mt-0">
+                  <SkillsForm />
+                </TabsContent>
+                <TabsContent value="projects" className="mt-0">
+                  <ProjectsForm />
+                </TabsContent>
+                <TabsContent value="certifications" className="mt-0">
+                  <CertificationsForm />
+                </TabsContent>
+                <TabsContent value="order" className="mt-0">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="font-display text-xl font-semibold mb-1">Section Order</h3>
+                      <p className="text-sm text-muted-foreground mb-6">Drag and drop to reorder how sections appear on your resume.</p>
+                    </div>
+                    <DraggableSections />
+                  </div>
+                </TabsContent>
+              </div>
+            </ScrollArea>
+
+            {/* Auto-save indicator */}
+            <div className="border-t px-6 py-2.5 flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <Save className="size-3.5" />
+              <span>Auto-saved to browser</span>
+            </div>
+          </Tabs>
         </div>
 
-        {/* Preview Panel */}
-        <div
-          className={`flex-1 bg-[#FAFAFA] flex flex-col overflow-hidden ${
-            mobileView === 'preview' ? 'flex' : 'hidden lg:flex'
-          }`}
-          ref={previewContainerRef}
-        >
-          {/* Preview Controls */}
-          <div className="h-9 flex items-center justify-between px-4 border-b border-[#E4E4E7] shrink-0">
-            <span className="text-label text-[#A1A1AA]">Preview</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPreviewScale(s => Math.max(s - 0.1, 0.3))}
-                className="w-7 h-7 flex items-center justify-center text-[#A1A1AA] hover:text-[#09090B] transition-opacity duration-200"
-              >
-                <ZoomOut className="w-3.5 h-3.5" />
-              </button>
-              <span className="text-[10px] text-[#A1A1AA] w-10 text-center font-mono-accent">
-                {Math.round(previewScale * 100)}%
-              </span>
-              <button
-                onClick={() => setPreviewScale(s => Math.min(s + 0.1, 1))}
-                className="w-7 h-7 flex items-center justify-center text-[#A1A1AA] hover:text-[#09090B] transition-opacity duration-200"
-              >
-                <ZoomIn className="w-3.5 h-3.5" />
-              </button>
+        {/* Right: Preview */}
+        <div className={`flex-1 flex flex-col bg-muted/30 ${showPreview ? 'flex' : 'hidden lg:flex'}`}>
+          {/* Preview toolbar */}
+          <div className="border-b bg-background/50 backdrop-blur-sm px-4 py-2.5 flex items-center justify-between shrink-0">
+            <span className="text-sm font-display font-semibold text-muted-foreground">Preview</span>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon-sm" onClick={() => setZoom(z => Math.max(50, z - 10))}>
+                <ZoomOut className="size-4" />
+              </Button>
+              <span className="text-xs font-mono-accent text-muted-foreground w-10 text-center">{zoom}%</span>
+              <Button variant="ghost" size="icon-sm" onClick={() => setZoom(z => Math.min(150, z + 10))}>
+                <ZoomIn className="size-4" />
+              </Button>
             </div>
           </div>
 
-          {/* Preview Content */}
+          {/* Preview area */}
           <ScrollArea className="flex-1">
-            <div className="p-6 flex justify-center">
-              <div style={{ transform: `scale(${previewScale})`, transformOrigin: 'top center' }}>
-                <ResumePreview ref={previewRef} />
+            <div className="p-8 lg:p-12 flex justify-center">
+              <div
+                style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+                className="transition-transform duration-200"
+              >
+                <div className="bg-white shadow-lg border" style={{ width: '800px' }}>
+                  <ResumePreview ref={previewRef} />
+                </div>
               </div>
             </div>
           </ScrollArea>
