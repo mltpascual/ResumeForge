@@ -531,10 +531,10 @@ export default function Home() {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <button
                         onClick={() => openPreview(i)}
-                        className="flex items-center gap-2 px-6 py-3 rounded-full font-display text-sm font-medium text-white transition-all duration-300 transform scale-90 group-hover:scale-100"
+                        className="flex items-center gap-2 px-6 py-3 rounded-full font-display text-sm font-medium transition-all duration-300 transform scale-90 group-hover:scale-100"
                         style={{
-                          background: 'var(--md3-primary)',
-                          color: 'var(--md3-on-primary)',
+                          backgroundColor: '#6750a4',
+                          color: '#ffffff',
                           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
                         }}
                       >
