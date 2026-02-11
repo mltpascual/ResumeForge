@@ -36,10 +36,12 @@ interface ResumeContextType {
   duplicateExperience: (id: string) => void;
   updateExperience: (id: string, field: string, value: string | boolean) => void;
   removeExperience: (id: string) => void;
+  reorderExperiences: (oldIndex: number, newIndex: number) => void;
   addEducation: () => void;
   duplicateEducation: (id: string) => void;
   updateEducation: (id: string, field: string, value: string) => void;
   removeEducation: (id: string) => void;
+  reorderEducation: (oldIndex: number, newIndex: number) => void;
   updateSkills: (skills: string) => void;
   addProject: () => void;
   updateProject: (id: string, field: string, value: string) => void;
@@ -218,6 +220,15 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const reorderExperiences = useCallback((oldIndex: number, newIndex: number) => {
+    setResumeData(prev => {
+      const updated = [...prev.experiences];
+      const [moved] = updated.splice(oldIndex, 1);
+      updated.splice(newIndex, 0, moved);
+      return { ...prev, experiences: updated };
+    });
+  }, []);
+
   const addEducation = useCallback(() => {
     setResumeData(prev => ({
       ...prev,
@@ -254,6 +265,15 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       ...prev,
       education: prev.education.filter(edu => edu.id !== id),
     }));
+  }, []);
+
+  const reorderEducation = useCallback((oldIndex: number, newIndex: number) => {
+    setResumeData(prev => {
+      const updated = [...prev.education];
+      const [moved] = updated.splice(oldIndex, 1);
+      updated.splice(newIndex, 0, moved);
+      return { ...prev, education: updated };
+    });
   }, []);
 
   const updateSkills = useCallback((skills: string) => {
@@ -390,8 +410,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     <ResumeContext.Provider value={{
       resumeData, setResumeData,
       updatePersonalInfo,
-      addExperience, duplicateExperience, updateExperience, removeExperience,
-      addEducation, duplicateEducation, updateEducation, removeEducation,
+      addExperience, duplicateExperience, updateExperience, removeExperience, reorderExperiences,
+      addEducation, duplicateEducation, updateEducation, removeEducation, reorderEducation,
       updateSkills,
       addProject, updateProject, removeProject,
       addCertification, updateCertification, removeCertification,
