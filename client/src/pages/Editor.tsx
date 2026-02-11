@@ -524,7 +524,7 @@ export default function Editor() {
                   style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
                   className="transition-transform duration-200 print:!transform-none"
                 >
-                  <div className="bg-white shadow-lg border print:shadow-none print:border-0" style={{ width: '800px' }}>
+                  <div className="bg-white shadow-lg border print:shadow-none print:border-0" style={{ width: '800px', minHeight: '1131px' }}>
                     <ResumePreview ref={previewRef} />
                   </div>
                 </div>
