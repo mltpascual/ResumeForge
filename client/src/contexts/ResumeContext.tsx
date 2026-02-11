@@ -33,9 +33,11 @@ interface ResumeContextType {
   setResumeData: (data: ResumeData) => void;
   updatePersonalInfo: (field: string, value: string) => void;
   addExperience: () => void;
+  duplicateExperience: (id: string) => void;
   updateExperience: (id: string, field: string, value: string | boolean) => void;
   removeExperience: (id: string) => void;
   addEducation: () => void;
+  duplicateEducation: (id: string) => void;
   updateEducation: (id: string, field: string, value: string) => void;
   removeEducation: (id: string) => void;
   updateSkills: (skills: string) => void;
@@ -188,6 +190,18 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const duplicateExperience = useCallback((id: string) => {
+    setResumeData(prev => {
+      const source = prev.experiences.find(exp => exp.id === id);
+      if (!source) return prev;
+      const idx = prev.experiences.findIndex(exp => exp.id === id);
+      const clone = { ...source, id: generateId() };
+      const updated = [...prev.experiences];
+      updated.splice(idx + 1, 0, clone);
+      return { ...prev, experiences: updated };
+    });
+  }, []);
+
   const updateExperience = useCallback((id: string, field: string, value: string | boolean) => {
     setResumeData(prev => ({
       ...prev,
@@ -212,6 +226,18 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
         startDate: '', endDate: '', gpa: '', description: '',
       }],
     }));
+  }, []);
+
+  const duplicateEducation = useCallback((id: string) => {
+    setResumeData(prev => {
+      const source = prev.education.find(edu => edu.id === id);
+      if (!source) return prev;
+      const idx = prev.education.findIndex(edu => edu.id === id);
+      const clone = { ...source, id: generateId() };
+      const updated = [...prev.education];
+      updated.splice(idx + 1, 0, clone);
+      return { ...prev, education: updated };
+    });
   }, []);
 
   const updateEducation = useCallback((id: string, field: string, value: string) => {
@@ -364,8 +390,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     <ResumeContext.Provider value={{
       resumeData, setResumeData,
       updatePersonalInfo,
-      addExperience, updateExperience, removeExperience,
-      addEducation, updateEducation, removeEducation,
+      addExperience, duplicateExperience, updateExperience, removeExperience,
+      addEducation, duplicateEducation, updateEducation, removeEducation,
       updateSkills,
       addProject, updateProject, removeProject,
       addCertification, updateCertification, removeCertification,

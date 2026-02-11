@@ -6,11 +6,13 @@ import MonthPicker from '@/components/MonthPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, X } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Plus, X, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function ExperienceForm() {
-  const { resumeData, addExperience, updateExperience, removeExperience } = useResume();
+  const { resumeData, addExperience, duplicateExperience, updateExperience, removeExperience } = useResume();
 
   return (
     <div className="space-y-6">
@@ -34,9 +36,32 @@ export default function ExperienceForm() {
                   <span className="text-xs font-mono-accent text-muted-foreground uppercase tracking-wider">
                     Position {String(index + 1).padStart(2, '0')}
                   </span>
-                  <Button variant="ghost" size="icon-sm" onClick={() => removeExperience(exp.id)} className="text-muted-foreground hover:text-destructive">
-                    <X className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-0.5">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            duplicateExperience(exp.id);
+                            toast.success('Experience entry duplicated');
+                          }}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Copy className="size-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Duplicate entry</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon-sm" onClick={() => removeExperience(exp.id)} className="text-muted-foreground hover:text-destructive">
+                          <X className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Remove entry</TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
 
                 <Separator />

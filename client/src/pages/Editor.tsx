@@ -25,6 +25,7 @@ import ProjectsForm from '@/components/forms/ProjectsForm';
 import CertificationsForm from '@/components/forms/CertificationsForm';
 import ResumePreview from '@/components/preview/ResumePreview';
 import DraggableSections from '@/components/DraggableSections';
+import ResumeCompleteness from '@/components/ResumeCompleteness';
 import type { TemplateId } from '@/types/resume';
 
 const INFO_TABS = [
@@ -758,10 +759,13 @@ export default function Editor() {
                 </AnimatePresence>
               </div>
 
-              {/* Auto-save indicator */}
-              <div className="px-5 py-2.5 flex items-center gap-2 text-xs text-muted-foreground shrink-0" style={{ borderTop: '1px solid var(--md3-outline-variant)', background: 'var(--md3-surface-container-low)' }}>
-                <Save className="size-3.5" />
-                <span className="font-medium">Auto-saved to browser</span>
+              {/* Auto-save indicator + completeness score */}
+              <div className="px-5 py-2.5 flex items-center justify-between shrink-0" style={{ borderTop: '1px solid var(--md3-outline-variant)', background: 'var(--md3-surface-container-low)' }}>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Save className="size-3.5" />
+                  <span className="font-medium">Auto-saved to browser</span>
+                </div>
+                <ResumeCompleteness />
               </div>
             </Tabs>
           </div>

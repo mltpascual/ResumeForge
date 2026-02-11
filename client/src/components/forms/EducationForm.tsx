@@ -6,11 +6,13 @@ import MonthPicker from '@/components/MonthPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, X } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Plus, X, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function EducationForm() {
-  const { resumeData, addEducation, updateEducation, removeEducation } = useResume();
+  const { resumeData, addEducation, duplicateEducation, updateEducation, removeEducation } = useResume();
 
   return (
     <div className="space-y-6">
@@ -34,9 +36,32 @@ export default function EducationForm() {
                   <span className="text-xs font-mono-accent text-muted-foreground uppercase tracking-wider">
                     Education {String(index + 1).padStart(2, '0')}
                   </span>
-                  <Button variant="ghost" size="icon-sm" onClick={() => removeEducation(edu.id)} className="text-muted-foreground hover:text-destructive">
-                    <X className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-0.5">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            duplicateEducation(edu.id);
+                            toast.success('Education entry duplicated');
+                          }}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Copy className="size-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Duplicate entry</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon-sm" onClick={() => removeEducation(edu.id)} className="text-muted-foreground hover:text-destructive">
+                          <X className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Remove entry</TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
                 <Separator />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
