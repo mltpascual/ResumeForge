@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { type ResumeData, type TemplateId, defaultResumeData, sampleResumeData } from '@/types/resume';
+import { type ResumeData, type TemplateId, type FontPairing, FONT_PAIRINGS, defaultResumeData, sampleResumeData } from '@/types/resume';
 
 const STORAGE_KEY = 'resumeforge_data';
 const TEMPLATE_KEY = 'resumeforge_template';
 const SECTIONS_KEY = 'resumeforge_sections';
 const ACCENT_KEY = 'resumeforge_accent';
+const FONT_KEY = 'resumeforge_font';
 
 export type SectionId = 'experiences' | 'education' | 'skills' | 'projects' | 'certifications';
 
@@ -51,6 +52,8 @@ interface ResumeContextType {
   setSectionOrder: (order: SectionId[]) => void;
   accentColor: string;
   setAccentColor: (color: string) => void;
+  selectedFont: FontPairing;
+  setSelectedFont: (fontId: string) => void;
   exportJSON: () => void;
   importJSON: (file: File) => Promise<void>;
 }
@@ -94,6 +97,11 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const [accentColor, setAccentColorState] = useState<string>(() =>
     loadFromStorage(ACCENT_KEY, '#18181B')
   );
+  const [selectedFontId, setSelectedFontIdState] = useState<string>(() =>
+    loadFromStorage(FONT_KEY, 'default')
+  );
+
+  const selectedFont = FONT_PAIRINGS.find(f => f.id === selectedFontId) || FONT_PAIRINGS[0];
 
   // Auto-save resume data
   useEffect(() => {
@@ -119,6 +127,12 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   const setAccentColor = useCallback((color: string) => {
     setAccentColorState(color);
     localStorage.setItem(ACCENT_KEY, JSON.stringify(color));
+  }, []);
+
+  // Auto-save font
+  const setSelectedFont = useCallback((fontId: string) => {
+    setSelectedFontIdState(fontId);
+    localStorage.setItem(FONT_KEY, JSON.stringify(fontId));
   }, []);
 
   const updatePersonalInfo = useCallback((field: string, value: string) => {
@@ -180,7 +194,6 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Skills is now a simple string
   const updateSkills = useCallback((skills: string) => {
     setResumeData(prev => ({ ...prev, skills }));
   }, []);
@@ -247,11 +260,12 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   // Export resume data as JSON file
   const exportJSON = useCallback(() => {
     const exportData = {
-      version: 2,
+      version: 3,
       resumeData,
       selectedTemplate,
       sectionOrder,
       accentColor,
+      fontId: selectedFontId,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -262,14 +276,13 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [resumeData, selectedTemplate, sectionOrder, accentColor]);
+  }, [resumeData, selectedTemplate, sectionOrder, accentColor, selectedFontId]);
 
   // Import resume data from JSON file
   const importJSON = useCallback(async (file: File) => {
     const text = await file.text();
     const parsed = JSON.parse(text);
     if (parsed.resumeData) {
-      // Migration: if skills is an array of objects, convert to comma-separated string
       if (Array.isArray(parsed.resumeData.skills)) {
         parsed.resumeData.skills = parsed.resumeData.skills
           .map((s: { name?: string } | string) => (typeof s === 'string' ? s : s.name || ''))
@@ -290,6 +303,10 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       setAccentColorState(parsed.accentColor);
       localStorage.setItem(ACCENT_KEY, JSON.stringify(parsed.accentColor));
     }
+    if (parsed.fontId) {
+      setSelectedFontIdState(parsed.fontId);
+      localStorage.setItem(FONT_KEY, JSON.stringify(parsed.fontId));
+    }
   }, []);
 
   return (
@@ -306,6 +323,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       activeSection, setActiveSection,
       sectionOrder, setSectionOrder,
       accentColor, setAccentColor,
+      selectedFont, setSelectedFont,
       exportJSON, importJSON,
     }}>
       {children}

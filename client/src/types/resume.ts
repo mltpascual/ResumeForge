@@ -56,7 +56,26 @@ export interface ResumeData {
   certifications: Certification[];
 }
 
-export type TemplateId = 'classic' | 'modern' | 'executive';
+export type TemplateId = 'classic' | 'modern' | 'executive' | 'compact' | 'minimal' | 'twocolumn';
+
+export interface FontPairing {
+  id: string;
+  name: string;
+  heading: string;
+  body: string;
+  mono: string;
+}
+
+export const FONT_PAIRINGS: FontPairing[] = [
+  { id: 'default', name: 'Space Grotesk + Archivo', heading: "'Space Grotesk', sans-serif", body: "'Archivo', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'classic-serif', name: 'Playfair Display + Source Sans', heading: "'Playfair Display', serif", body: "'Source Sans 3', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'modern-clean', name: 'DM Sans + Inter', heading: "'DM Sans', sans-serif", body: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'editorial', name: 'Lora + Nunito Sans', heading: "'Lora', serif", body: "'Nunito Sans', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'elegant', name: 'Crimson Text + Roboto', heading: "'Crimson Text', serif", body: "'Roboto', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'traditional', name: 'Merriweather + Source Sans', heading: "'Merriweather', serif", body: "'Source Sans 3', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'minimal-sans', name: 'Inter + Inter', heading: "'Inter', sans-serif", body: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" },
+  { id: 'literary', name: 'Libre Baskerville + Archivo', heading: "'Libre Baskerville', serif", body: "'Archivo', sans-serif", mono: "'JetBrains Mono', monospace" },
+];
 
 export interface TemplateInfo {
   id: TemplateId;

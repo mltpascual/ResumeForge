@@ -2,19 +2,20 @@ import { useState, useRef, useCallback } from 'react';
 import { Link } from 'wouter';
 import { useResume } from '@/contexts/ResumeContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { FONT_PAIRINGS } from '@/types/resume';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Download, FileText, Trash2, Moon, Sun,
   ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
   Wrench, FolderOpen, Award, Save, ArrowUpDown,
-  Upload, Palette, Printer,
+  Upload, Palette, Printer, Type, LayoutTemplate,
 } from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
@@ -26,7 +27,7 @@ import ResumePreview from '@/components/preview/ResumePreview';
 import DraggableSections from '@/components/DraggableSections';
 import type { TemplateId } from '@/types/resume';
 
-const TABS = [
+const INFO_TABS = [
   { value: 'personal', label: 'Personal', icon: User },
   { value: 'experience', label: 'Experience', icon: Briefcase },
   { value: 'education', label: 'Education', icon: GraduationCap },
@@ -36,15 +37,27 @@ const TABS = [
   { value: 'order', label: 'Order', icon: ArrowUpDown },
 ];
 
-const TEMPLATES: { id: TemplateId; label: string }[] = [
-  { id: 'classic', label: 'Classic' },
-  { id: 'modern', label: 'Modern' },
-  { id: 'executive', label: 'Executive' },
+const DESIGN_TABS = [
+  { value: 'templates', label: 'Templates', icon: LayoutTemplate },
+  { value: 'fonts', label: 'Fonts', icon: Type },
+  { value: 'colors', label: 'Colors', icon: Palette },
+];
+
+const ALL_TABS = [...INFO_TABS, ...DESIGN_TABS];
+
+const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
+  { id: 'classic', label: 'Classic', desc: 'Traditional single-column layout' },
+  { id: 'modern', label: 'Modern', desc: 'Sidebar with accent color' },
+  { id: 'executive', label: 'Executive', desc: 'Bold header with two columns' },
+  { id: 'compact', label: 'Compact', desc: 'Dense, space-efficient layout' },
+  { id: 'minimal', label: 'Minimal', desc: 'Clean and understated' },
+  { id: 'twocolumn', label: 'Two Column', desc: 'Balanced two-column split' },
 ];
 
 const PRESET_COLORS = [
   '#18181B', '#1E3A5F', '#1E40AF', '#7C3AED', '#BE185D',
   '#B91C1C', '#C2410C', '#A16207', '#15803D', '#0F766E',
+  '#4338CA', '#0369A1', '#6D28D9', '#9333EA', '#DB2777',
 ];
 
 export default function Editor() {
@@ -53,6 +66,7 @@ export default function Editor() {
     selectedTemplate, setSelectedTemplate,
     activeSection, setActiveSection,
     accentColor, setAccentColor,
+    selectedFont, setSelectedFont,
     exportJSON, importJSON,
   } = useResume();
   const { theme, toggleTheme } = useTheme();
@@ -74,7 +88,6 @@ export default function Editor() {
         import('html2canvas'),
       ]);
 
-      // Clone the preview element — it uses all inline styles (no oklch/Tailwind)
       const clone = el.cloneNode(true) as HTMLElement;
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
@@ -85,7 +98,6 @@ export default function Editor() {
       clone.style.zIndex = '-1';
       document.body.appendChild(clone);
 
-      // Small delay for layout to settle
       await new Promise(resolve => setTimeout(resolve, 200));
 
       const canvas = await html2canvas(clone, {
@@ -96,7 +108,6 @@ export default function Editor() {
         width: 800,
         windowWidth: 800,
         onclone: (clonedDoc) => {
-          // Ensure the cloned element has no oklch colors from inherited styles
           const root = clonedDoc.body;
           root.style.backgroundColor = '#ffffff';
           root.style.color = '#09090B';
@@ -126,7 +137,6 @@ export default function Editor() {
         heightLeft -= pageHeight;
       }
 
-      // Use data URI for maximum compatibility
       const pdfDataUri = pdf.output('datauristring');
       const downloadLink = document.createElement('a');
       downloadLink.href = pdfDataUri;
@@ -156,7 +166,6 @@ export default function Editor() {
     } catch {
       toast.error('Failed to import. Please check the file format.');
     }
-    // Reset file input
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [importJSON]);
 
@@ -167,7 +176,6 @@ export default function Editor() {
 
   return (
     <>
-      {/* Hidden file input for JSON import */}
       <input
         ref={fileInputRef}
         type="file"
@@ -177,25 +185,24 @@ export default function Editor() {
       />
 
       <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden print:overflow-visible">
-        {/* Top Bar */}
+        {/* Top Bar — compact, only essential actions */}
         <header className="border-b bg-background/95 backdrop-blur-sm shrink-0 print:hidden">
-          <div className="flex items-center justify-between h-14 px-4 lg:px-6">
+          <div className="flex items-center justify-between h-12 px-4">
             <div className="flex items-center gap-3">
               <Link href="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="size-5" />
+                <Button variant="ghost" size="icon" className="size-8">
+                  <ArrowLeft className="size-4" />
                 </Button>
               </Link>
-              <Separator orientation="vertical" className="h-6" />
-              <span className="font-display text-lg font-bold tracking-tight">ResumeForge</span>
+              <Separator orientation="vertical" className="h-5" />
+              <span className="font-display text-base font-bold tracking-tight">ResumeForge</span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              {/* Sample / Clear */}
+            <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => { loadSampleData(); toast.success('Sample data loaded'); }} className="gap-2">
-                    <FileText className="size-4" />
+                  <Button variant="ghost" size="sm" onClick={() => { loadSampleData(); toast.success('Sample data loaded'); }} className="gap-1.5 h-8 text-xs">
+                    <FileText className="size-3.5" />
                     <span className="hidden sm:inline">Sample</span>
                   </Button>
                 </TooltipTrigger>
@@ -204,134 +211,65 @@ export default function Editor() {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => { clearAllData(); toast.info('Data cleared'); }} className="gap-2">
-                    <Trash2 className="size-4" />
+                  <Button variant="ghost" size="sm" onClick={() => { clearAllData(); toast.info('Data cleared'); }} className="gap-1.5 h-8 text-xs">
+                    <Trash2 className="size-3.5" />
                     <span className="hidden sm:inline">Clear</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Clear all data</TooltipContent>
               </Tooltip>
 
-              <Separator orientation="vertical" className="h-6" />
+              <Separator orientation="vertical" className="h-5 mx-1" />
 
-              {/* Template Selector */}
-              <div className="hidden md:flex items-center gap-1 bg-muted p-1 rounded-lg">
-                {TEMPLATES.map(t => (
-                  <Button
-                    key={t.id}
-                    variant={selectedTemplate === t.id ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setSelectedTemplate(t.id)}
-                    className="text-xs font-mono-accent h-7 px-3"
-                  >
-                    {t.label}
-                  </Button>
-                ))}
-              </div>
-
-              <Separator orientation="vertical" className="h-6 hidden md:block" />
-
-              {/* Accent Color Picker */}
-              <Popover>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative">
-                        <Palette className="size-4" />
-                        <span
-                          className="absolute bottom-1 right-1 size-2.5 rounded-full border border-background"
-                          style={{ backgroundColor: accentColor }}
-                        />
-                      </Button>
-                    </PopoverTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>Accent color</TooltipContent>
-                </Tooltip>
-                <PopoverContent className="w-56 p-3" align="end">
-                  <Label className="text-xs font-display font-semibold mb-2 block">Accent Color</Label>
-                  <div className="grid grid-cols-5 gap-2 mb-3">
-                    {PRESET_COLORS.map(color => (
-                      <button
-                        key={color}
-                        onClick={() => setAccentColor(color)}
-                        className="size-8 rounded-md border-2 transition-all hover:scale-110"
-                        style={{
-                          backgroundColor: color,
-                          borderColor: accentColor === color ? 'var(--foreground)' : 'transparent',
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="color"
-                      value={accentColor}
-                      onChange={e => setAccentColor(e.target.value)}
-                      className="w-10 h-8 p-0 border-0 cursor-pointer"
-                    />
-                    <Input
-                      value={accentColor}
-                      onChange={e => setAccentColor(e.target.value)}
-                      placeholder="#18181B"
-                      className="h-8 text-xs font-mono-accent flex-1"
-                    />
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              {/* Import / Export JSON */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="size-4" />
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="size-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Import JSON</TooltipContent>
               </Tooltip>
 
-              <Separator orientation="vertical" className="h-6" />
-
-              {/* Dark mode toggle */}
-              {toggleTheme && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                      {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Toggle {theme === 'dark' ? 'light' : 'dark'} mode</TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Print */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handlePrint}>
-                    <Printer className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Print (Ctrl+P)</TooltipContent>
-              </Tooltip>
-
-              {/* Export buttons */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={handleExportJSON} className="gap-2">
-                    <Download className="size-4" />
+                  <Button variant="ghost" size="sm" onClick={handleExportJSON} className="gap-1.5 h-8 text-xs">
+                    <Download className="size-3.5" />
                     <span className="hidden lg:inline">JSON</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Export as JSON</TooltipContent>
               </Tooltip>
 
+              <Separator orientation="vertical" className="h-5 mx-1" />
+
+              {toggleTheme && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8" onClick={toggleTheme}>
+                      {theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Toggle {theme === 'dark' ? 'light' : 'dark'} mode</TooltipContent>
+                </Tooltip>
+              )}
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-8" onClick={handlePrint}>
+                    <Printer className="size-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Print (Ctrl+P)</TooltipContent>
+              </Tooltip>
+
               <Button
                 size="sm"
                 onClick={handleExportPDF}
                 disabled={exporting}
-                className="gap-2 font-display"
+                className="gap-1.5 h-8 text-xs font-display ml-1"
               >
-                <Download className="size-4" />
-                <span className="hidden sm:inline">{exporting ? 'Exporting...' : 'PDF'}</span>
+                <Download className="size-3.5" />
+                {exporting ? 'Exporting...' : 'Export PDF'}
               </Button>
             </div>
           </div>
@@ -341,57 +279,61 @@ export default function Editor() {
         <div className="lg:hidden flex border-b print:hidden">
           <button
             onClick={() => setShowPreview(false)}
-            className={`flex-1 py-3 text-sm font-display font-semibold text-center transition-colors ${!showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`flex-1 py-2.5 text-sm font-display font-semibold text-center transition-colors ${!showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >
             Editor
           </button>
           <button
             onClick={() => setShowPreview(true)}
-            className={`flex-1 py-3 text-sm font-display font-semibold text-center transition-colors ${showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`flex-1 py-2.5 text-sm font-display font-semibold text-center transition-colors ${showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >
             Preview
           </button>
         </div>
 
-        {/* Mobile template selector */}
-        <div className="md:hidden border-b px-4 py-2 flex items-center gap-1 bg-muted/50 overflow-x-auto print:hidden">
-          {TEMPLATES.map(t => (
-            <Button
-              key={t.id}
-              variant={selectedTemplate === t.id ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setSelectedTemplate(t.id)}
-              className="text-xs font-mono-accent h-7 px-3 shrink-0"
-            >
-              {t.label}
-            </Button>
-          ))}
-        </div>
-
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden print:overflow-visible print:block">
-          {/* Left: Form Editor */}
-          <div className={`w-full lg:w-[520px] xl:w-[580px] border-r flex flex-col shrink-0 overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'} print:hidden`}>
+          {/* Left: Form Editor + Design Controls */}
+          <div className={`w-full lg:w-[560px] xl:w-[620px] border-r flex flex-col shrink-0 overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'} print:hidden`}>
             <Tabs value={activeSection} onValueChange={setActiveSection} className="flex flex-col h-full overflow-hidden">
-              {/* Horizontal Tabs */}
-              <div className="border-b px-4 pt-3 pb-0 shrink-0 overflow-x-auto">
-                <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start">
-                  {TABS.map(tab => (
+              {/* Horizontal Tabs — Info + Design */}
+              <div className="border-b px-3 pt-2 pb-0 shrink-0 overflow-x-auto">
+                <TabsList className="w-full h-auto flex-wrap gap-0.5 bg-transparent p-0 justify-start">
+                  {/* Info tabs */}
+                  {INFO_TABS.map(tab => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="gap-2 px-3 py-2.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg"
+                      className="gap-1.5 px-2.5 py-2 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md"
                     >
-                      <tab.icon className="size-4" />
+                      <tab.icon className="size-3.5" />
+                      <span className="hidden sm:inline">{tab.label}</span>
+                    </TabsTrigger>
+                  ))}
+
+                  {/* Separator dot */}
+                  <div className="flex items-center px-1">
+                    <div className="w-px h-4 bg-border" />
+                  </div>
+
+                  {/* Design tabs */}
+                  {DESIGN_TABS.map(tab => (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="gap-1.5 px-2.5 py-2 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md"
+                    >
+                      <tab.icon className="size-3.5" />
                       <span className="hidden sm:inline">{tab.label}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </div>
 
-              {/* Form Content — native overflow scroll instead of ScrollArea */}
+              {/* Tab Content — scrollable */}
               <div className="flex-1 overflow-y-auto">
-                <div className="p-6 lg:p-8">
+                <div className="p-5 lg:p-6">
+                  {/* Info tab contents */}
                   <TabsContent value="personal" className="mt-0">
                     <PersonalInfoForm />
                   </TabsContent>
@@ -411,20 +353,144 @@ export default function Editor() {
                     <CertificationsForm />
                   </TabsContent>
                   <TabsContent value="order" className="mt-0">
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="font-display text-xl font-semibold mb-1">Section Order</h3>
-                        <p className="text-sm text-muted-foreground mb-6">Drag and drop to reorder how sections appear on your resume.</p>
+                        <h3 className="font-display text-lg font-semibold mb-1">Section Order</h3>
+                        <p className="text-sm text-muted-foreground mb-4">Drag to reorder how sections appear on your resume.</p>
                       </div>
                       <DraggableSections />
+                    </div>
+                  </TabsContent>
+
+                  {/* Design tab contents */}
+                  <TabsContent value="templates" className="mt-0">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-display text-lg font-semibold mb-1">Templates</h3>
+                        <p className="text-sm text-muted-foreground">Choose a layout for your resume.</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {TEMPLATES.map(t => (
+                          <button
+                            key={t.id}
+                            onClick={() => setSelectedTemplate(t.id)}
+                            className={`text-left p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                              selectedTemplate === t.id
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-border hover:border-muted-foreground/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-display text-sm font-semibold">{t.label}</span>
+                              {selectedTemplate === t.id && (
+                                <Badge variant="default" className="text-[10px] h-5">Active</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{t.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="fonts" className="mt-0">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-display text-lg font-semibold mb-1">Font Pairing</h3>
+                        <p className="text-sm text-muted-foreground">Select a heading + body font combination.</p>
+                      </div>
+                      <div className="space-y-2">
+                        {FONT_PAIRINGS.map(font => (
+                          <button
+                            key={font.id}
+                            onClick={() => setSelectedFont(font.id)}
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                              selectedFont.id === font.id
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-border hover:border-muted-foreground/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-semibold" style={{ fontFamily: font.heading }}>{font.name}</span>
+                              {selectedFont.id === font.id && (
+                                <Badge variant="default" className="text-[10px] h-5">Active</Badge>
+                              )}
+                            </div>
+                            <div className="flex gap-4 text-xs text-muted-foreground">
+                              <span>
+                                <span className="font-semibold" style={{ fontFamily: font.heading }}>Heading</span>
+                              </span>
+                              <span>
+                                <span style={{ fontFamily: font.body }}>Body text sample</span>
+                              </span>
+                            </div>
+                            <p className="mt-2 text-[13px] leading-relaxed" style={{ fontFamily: font.body }}>
+                              The quick brown fox jumps over the lazy dog.
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="colors" className="mt-0">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-display text-lg font-semibold mb-1">Accent Color</h3>
+                        <p className="text-sm text-muted-foreground">Personalize your resume with a custom accent color.</p>
+                      </div>
+
+                      <div className="grid grid-cols-5 gap-3">
+                        {PRESET_COLORS.map(color => (
+                          <button
+                            key={color}
+                            onClick={() => setAccentColor(color)}
+                            className="group relative aspect-square rounded-lg border-2 transition-all hover:scale-105"
+                            style={{
+                              backgroundColor: color,
+                              borderColor: accentColor === color ? 'var(--foreground)' : 'transparent',
+                            }}
+                          >
+                            {accentColor === color && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="size-2.5 rounded-full bg-white/90" />
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      <Separator />
+
+                      <div>
+                        <Label className="text-xs font-display font-semibold mb-2 block">Custom Color</Label>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            type="color"
+                            value={accentColor}
+                            onChange={e => setAccentColor(e.target.value)}
+                            className="w-12 h-10 p-1 border-2 cursor-pointer rounded-lg"
+                          />
+                          <Input
+                            value={accentColor}
+                            onChange={e => setAccentColor(e.target.value)}
+                            placeholder="#18181B"
+                            className="h-10 text-sm font-mono-accent flex-1"
+                          />
+                          <div
+                            className="h-10 w-20 rounded-lg border-2 shrink-0"
+                            style={{ backgroundColor: accentColor, borderColor: 'var(--border)' }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </TabsContent>
                 </div>
               </div>
 
               {/* Auto-save indicator */}
-              <div className="border-t px-6 py-2.5 flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                <Save className="size-3.5" />
+              <div className="border-t px-5 py-2 flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+                <Save className="size-3" />
                 <span>Auto-saved to browser</span>
               </div>
             </Tabs>
@@ -433,22 +499,27 @@ export default function Editor() {
           {/* Right: Preview */}
           <div className={`flex-1 flex flex-col bg-muted/30 overflow-hidden ${showPreview ? 'flex' : 'hidden lg:flex'} print:block print:bg-white`}>
             {/* Preview toolbar */}
-            <div className="border-b bg-background/50 backdrop-blur-sm px-4 py-2.5 flex items-center justify-between shrink-0 print:hidden">
-              <span className="text-sm font-display font-semibold text-muted-foreground">Preview</span>
+            <div className="border-b bg-background/50 backdrop-blur-sm px-4 py-2 flex items-center justify-between shrink-0 print:hidden">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon-sm" onClick={() => setZoom(z => Math.max(50, z - 10))}>
-                  <ZoomOut className="size-4" />
+                <span className="text-xs font-display font-semibold text-muted-foreground">Preview</span>
+                <Badge variant="secondary" className="text-[10px] h-5 font-mono-accent">
+                  {TEMPLATES.find(t => t.id === selectedTemplate)?.label}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button variant="ghost" size="icon" className="size-7" onClick={() => setZoom(z => Math.max(50, z - 10))}>
+                  <ZoomOut className="size-3.5" />
                 </Button>
-                <span className="text-xs font-mono-accent text-muted-foreground w-10 text-center">{zoom}%</span>
-                <Button variant="ghost" size="icon-sm" onClick={() => setZoom(z => Math.min(150, z + 10))}>
-                  <ZoomIn className="size-4" />
+                <span className="text-[10px] font-mono-accent text-muted-foreground w-8 text-center">{zoom}%</span>
+                <Button variant="ghost" size="icon" className="size-7" onClick={() => setZoom(z => Math.min(150, z + 10))}>
+                  <ZoomIn className="size-3.5" />
                 </Button>
               </div>
             </div>
 
-            {/* Preview area — native overflow scroll */}
+            {/* Preview area */}
             <div className="flex-1 overflow-y-auto print:overflow-visible">
-              <div className="p-8 lg:p-12 flex justify-center print:p-0">
+              <div className="p-6 lg:p-10 flex justify-center print:p-0">
                 <div
                   style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
                   className="transition-transform duration-200 print:!transform-none"
