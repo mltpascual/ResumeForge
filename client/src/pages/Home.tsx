@@ -15,8 +15,6 @@ import {
 } from '@/components/preview/ResumePreview';
 import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 
-const HERO_IMG = 'https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/E3e72YchZqpeCDdxOT6OO0-img-1_1770772003000_na1fn_bWluaW1hbC1oZXJv.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0UzZTcyWWNoWnFwZUNEZHhPVDZPTzAtaW1nLTFfMTc3MDc3MjAwMzAwMF9uYTFmbl9iV2x1YVcxaGJDMW9aWEp2LmpwZz94LW9zcy1wcm9jZXNzPWltYWdlL3Jlc2l6ZSx3XzE5MjAsaF8xOTIwL2Zvcm1hdCx3ZWJwL3F1YWxpdHkscV84MCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5ODc2MTYwMH19fV19&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=QPdvUtpnctFjUTYZkzQGjIvZUYs0I6q67CI6x7GLiJ7PtLnaxRLCIRwHbYtHz3CvE6UKBe5ZBudN0zAGYg8bTHrEJeYk1Q0nYOg5I09wMcS58Nw9VzsQyFBIqPiG7etbVLbUh~t7TBjuPQkgTJJtR-4Xaa7XCzLjKYqOtGvzkt~fGi4irS0Sw33Z2VL3Br6fQeDfOh8F5aMJS0Rm53oml-cMflhTlI3nxAjzGgjFzKIwVnHQS49fPgkC9aN1lA1ofneUhzu5Tp7g4JI7iQoYrsn774iJ3tD6CZrT0JW9~Kpts60PdrgjLmvJn~1lXPpin~DZXaazraMuaVu6ORUzKg__';
-
 const features = [
   { icon: FileText, title: 'Guided Editor', desc: 'Structured form fields for every resume section. No blank-page anxiety.' },
   { icon: Eye, title: 'Live Preview', desc: 'See changes instantly as you type. What you see is what you export.' },
@@ -384,10 +382,10 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero — MD3 Large Display Typography */}
-      <section className="container py-16 lg:py-28">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
+      {/* Hero — Centered Banner */}
+      <section className="py-24 lg:py-36">
+        <div className="container">
+          <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col items-center text-center max-w-3xl mx-auto">
             <motion.div variants={fadeUp} className="mb-6">
               <span
                 className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-1.5 rounded-full"
@@ -397,13 +395,13 @@ export default function Home() {
                 Resume Builder
               </span>
             </motion.div>
-            <motion.h1 variants={fadeUp} className="font-display text-5xl sm:text-6xl lg:text-[64px] font-medium leading-[1.1] mb-6 tracking-tight">
-              Build resumes<br />that work.
+            <motion.h1 variants={fadeUp} className="font-display text-5xl sm:text-6xl lg:text-[72px] font-medium leading-[1.08] mb-6 tracking-tight">
+              Build resumes<br />that actually work.
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-lg mb-10 leading-relaxed">
+            <motion.p variants={fadeUp} className="text-lg sm:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed">
               A focused tool for creating clean, professional resumes. Fill in your details, choose a template, export as PDF. Nothing more.
             </motion.p>
-            <motion.div variants={fadeUp} className="flex items-center gap-4 flex-wrap">
+            <motion.div variants={fadeUp} className="flex items-center gap-4 flex-wrap justify-center">
               <Link href="/editor">
                 <Button className="h-14 px-8 text-base font-display font-medium rounded-full gap-2 md3-elevation-1">
                   Start Building
@@ -412,17 +410,6 @@ export default function Home() {
               </Link>
               <span className="text-sm text-muted-foreground">No account required</span>
             </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.05, 0.7, 0.1, 1] as [number, number, number, number] }}
-            className="relative"
-          >
-            <div className="aspect-[4/3] rounded-3xl overflow-hidden md3-elevation-2" style={{ background: 'var(--md3-surface-container)' }}>
-              <img src={HERO_IMG} alt="Resume on desk" className="w-full h-full object-cover" />
-            </div>
           </motion.div>
         </div>
       </section>
