@@ -21,6 +21,12 @@ import {
 } from '@/components/preview/NewTemplates';
 import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 
+const NAV_SECTIONS = [
+  { id: 'features', label: 'Features' },
+  { id: 'templates', label: 'Templates' },
+  { id: 'get-started', label: 'Get Started' },
+] as const;
+
 const features = [
   { icon: FileText, title: 'Guided Editor', desc: 'Structured form fields for every resume section. No blank-page anxiety.' },
   { icon: Eye, title: 'Live Preview', desc: 'See changes instantly as you type. What you see is what you export.' },
@@ -361,18 +367,65 @@ export default function Home() {
     navigate('/editor');
   }, [setSelectedTemplate, navigate]);
 
+  const [activeSection, setActiveSection] = useState<string>('');
+
+  // Track which section is in view for active nav highlighting
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    NAV_SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(id);
+        },
+        { rootMargin: '-40% 0px -50% 0px', threshold: 0 }
+      );
+      observer.observe(el);
+      observers.push(observer);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* MD3 Top App Bar */}
       <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
+          <button onClick={scrollToTop} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="size-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--md3-primary-container)' }}>
               <FileText className="size-5" style={{ color: 'var(--md3-on-primary-container)' }} />
             </div>
             <span className="font-display text-xl font-medium tracking-tight">ResumeForge</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <div className="flex items-center gap-1">
+            {/* Smooth scroll nav links */}
+            <div className="hidden md:flex items-center gap-1 mr-3">
+              {NAV_SECTIONS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => scrollToSection(id)}
+                  className="relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300"
+                  style={{
+                    color: activeSection === id ? 'var(--md3-on-secondary-container)' : 'var(--md3-on-surface-variant)',
+                    background: activeSection === id ? 'var(--md3-secondary-container)' : 'transparent',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             {toggleTheme && (
               <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="rounded-full size-10">
                 {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
@@ -450,7 +503,7 @@ export default function Home() {
       </section>
 
       {/* Features — MD3 Filled Cards */}
-      <section className="py-20 lg:py-28" style={{ background: 'var(--md3-surface-container-low)' }}>
+      <section id="features" className="py-20 lg:py-28 scroll-mt-16" style={{ background: 'var(--md3-surface-container-low)' }}>
         <div className="container">
           <motion.div
             initial="hidden"
@@ -494,7 +547,7 @@ export default function Home() {
       </section>
 
       {/* Templates — Live Resume Previews with Preview Button */}
-      <section className="container py-20 lg:py-28">
+      <section id="templates" className="container py-20 lg:py-28 scroll-mt-16">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -574,7 +627,7 @@ export default function Home() {
       </section>
 
       {/* CTA — MD3 Filled Tonal Surface */}
-      <section className="py-20 lg:py-28" style={{ background: 'var(--md3-surface-container-low)' }}>
+      <section id="get-started" className="py-20 lg:py-28 scroll-mt-16" style={{ background: 'var(--md3-surface-container-low)' }}>
         <div className="container">
           <motion.div
             initial="hidden"
