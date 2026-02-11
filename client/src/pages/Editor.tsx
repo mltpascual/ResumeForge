@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useResume } from '@/contexts/ResumeContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,12 +9,13 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Download, FileText, Trash2, Moon, Sun,
   ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
   Wrench, FolderOpen, Award, Save, ArrowUpDown,
   Upload, Palette, Printer, Type, LayoutTemplate, ALargeSmall,
-  Check,
+  Check, ChevronUp,
 } from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
@@ -81,6 +82,53 @@ const PRESET_COLORS = [
   '#4338CA', '#0369A1', '#6D28D9', '#9333EA', '#DB2777',
 ];
 
+/** Tab pill with tooltip that shows on small screens when label is hidden */
+function TabPill({
+  tab,
+  variant,
+  isActive,
+}: {
+  tab: { value: string; label: string; icon: React.ComponentType<{ className?: string }> };
+  variant: 'info' | 'design';
+  isActive: boolean;
+}) {
+  const activeClass = variant === 'info'
+    ? 'data-[state=active]:bg-[var(--md3-primary-container)] data-[state=active]:text-[var(--md3-on-primary-container)]'
+    : 'data-[state=active]:bg-[var(--md3-secondary-container)] data-[state=active]:text-[var(--md3-on-secondary-container)]';
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <TabsTrigger
+          value={tab.value}
+          className={`relative gap-1.5 px-3 py-2 text-xs font-medium rounded-full ${activeClass} data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all`}
+          style={{ marginBottom: '5px' }}
+        >
+          <tab.icon className="size-3.5" />
+          <span className="hidden sm:inline">{tab.label}</span>
+          {/* Animated underline indicator */}
+          {isActive && (
+            <motion.div
+              layoutId="tab-underline"
+              className="absolute -bottom-[7px] left-1/2 h-[3px] rounded-full"
+              style={{
+                background: variant === 'info' ? 'var(--md3-primary)' : 'var(--md3-secondary)',
+                width: '60%',
+                x: '-50%',
+              }}
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          )}
+        </TabsTrigger>
+      </TooltipTrigger>
+      {/* Tooltip only visible on small screens where label is hidden */}
+      <TooltipContent className="sm:hidden" sideOffset={6}>
+        {tab.label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function Editor() {
   const {
     loadSampleData, clearAllData,
@@ -99,7 +147,24 @@ export default function Editor() {
   const [showPreview, setShowPreview] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Track scroll position for scroll-to-top button
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      setShowScrollTop(container.scrollTop > 300);
+    };
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleExportPDF = useCallback(async () => {
     const el = previewRef.current;
@@ -259,7 +324,7 @@ export default function Editor() {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={() => fileInputRef.current?.click()}>
+                  <Button variant="ghost" size="icon" className="size-9 rounded-full" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="size-4" />
                   </Button>
                 </TooltipTrigger>
@@ -334,18 +399,16 @@ export default function Editor() {
           {/* Left: Form Editor + Design Controls */}
           <div className={`w-full lg:w-[560px] xl:w-[620px] flex flex-col shrink-0 overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'} print:hidden`} style={{ borderRight: '1px solid var(--md3-outline-variant)' }}>
             <Tabs value={activeSection} onValueChange={setActiveSection} className="flex flex-col h-full overflow-hidden">
-              {/* MD3 Navigation Tabs */}
+              {/* MD3 Navigation Tabs with animated underline */}
               <div className="shrink-0 overflow-x-auto px-3 pt-2 pb-2" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
                 <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start">
                   {INFO_TABS.map(tab => (
-                    <TabsTrigger
+                    <TabPill
                       key={tab.value}
-                      value={tab.value}
-                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-primary-container)] data-[state=active]:text-[var(--md3-on-primary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all" style={{marginBottom: '5px'}}
-                    >
-                      <tab.icon className="size-3.5" />
-                      <span className="hidden sm:inline">{tab.label}</span>
-                    </TabsTrigger>
+                      tab={tab}
+                      variant="info"
+                      isActive={activeSection === tab.value}
+                    />
                   ))}
 
                   <div className="flex items-center px-1">
@@ -353,311 +416,346 @@ export default function Editor() {
                   </div>
 
                   {DESIGN_TABS.map(tab => (
-                    <TabsTrigger
+                    <TabPill
                       key={tab.value}
-                      value={tab.value}
-                      className="gap-1.5 px-3 py-2 text-xs font-medium rounded-full data-[state=active]:bg-[var(--md3-secondary-container)] data-[state=active]:text-[var(--md3-on-secondary-container)] data-[state=inactive]:text-[var(--md3-on-surface-variant)] transition-all" style={{marginBottom: '5px'}}
-                    >
-                      <tab.icon className="size-3.5" />
-                      <span className="hidden sm:inline">{tab.label}</span>
-                    </TabsTrigger>
+                      tab={tab}
+                      variant="design"
+                      isActive={activeSection === tab.value}
+                    />
                   ))}
                 </TabsList>
               </div>
 
-              {/* Tab Content — scrollable */}
-              <div className="flex-1 overflow-y-auto" style={{ background: 'var(--md3-surface-container-lowest)' }}>
-                <div className="p-5 lg:p-6">
-                  {/* Info tab contents */}
-                  <TabsContent value="personal" className="mt-0">
-                    <PersonalInfoForm />
-                  </TabsContent>
-                  <TabsContent value="experience" className="mt-0">
-                    <ExperienceForm />
-                  </TabsContent>
-                  <TabsContent value="education" className="mt-0">
-                    <EducationForm />
-                  </TabsContent>
-                  <TabsContent value="skills" className="mt-0">
-                    <SkillsForm />
-                  </TabsContent>
-                  <TabsContent value="projects" className="mt-0">
-                    <ProjectsForm />
-                  </TabsContent>
-                  <TabsContent value="certifications" className="mt-0">
-                    <CertificationsForm />
-                  </TabsContent>
-                  <TabsContent value="order" className="mt-0">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Section Order</h3>
-                        <p className="text-sm text-muted-foreground mb-4">Drag to reorder how sections appear on your resume.</p>
-                      </div>
-                      <DraggableSections />
-                    </div>
-                  </TabsContent>
-
-                  {/* Design tab contents */}
-                  <TabsContent value="templates" className="mt-0">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Templates</h3>
-                        <p className="text-sm text-muted-foreground">Choose a layout for your resume.</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        {TEMPLATES.map(t => (
-                          <button
-                            key={t.id}
-                            onClick={() => setSelectedTemplate(t.id)}
-                            className="text-left p-4 rounded-2xl transition-all hover:shadow-md md3-state-layer"
-                            style={cardStyle(selectedTemplate === t.id)}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-display text-sm font-medium">{t.label}</span>
-                              {selectedTemplate === t.id && (
-                                <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
-                                  <Check className="size-3 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-xs opacity-70 leading-relaxed">{t.desc}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="fonts" className="mt-0">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Font Pairing</h3>
-                        <p className="text-sm text-muted-foreground">Select a heading + body font combination.</p>
-                      </div>
-                      <div className="space-y-2">
-                        {FONT_PAIRINGS.map(font => (
-                          <button
-                            key={font.id}
-                            onClick={() => setSelectedFont(font.id)}
-                            className="w-full text-left p-4 rounded-2xl transition-all hover:shadow-md md3-state-layer"
-                            style={cardStyle(selectedFont.id === font.id)}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium" style={{ fontFamily: font.heading }}>{font.name}</span>
-                              {selectedFont.id === font.id && (
-                                <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
-                                  <Check className="size-3 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex gap-4 text-xs opacity-70">
-                              <span style={{ fontFamily: font.heading, fontWeight: 600 }}>Heading</span>
-                              <span style={{ fontFamily: font.body }}>Body text sample</span>
-                            </div>
-                            <p className="mt-2 text-[13px] leading-relaxed opacity-80" style={{ fontFamily: font.body }}>
-                              The quick brown fox jumps over the lazy dog.
-                            </p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="size" className="mt-0">
-                    <div className="space-y-5">
-                      {/* Font Size */}
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Font Size</h3>
-                        <p className="text-sm text-muted-foreground">Adjust the text size across your entire resume.</p>
-                      </div>
-
-                      <div className="space-y-2">
-                        {FONT_SIZE_PRESETS.map(preset => (
-                          <button
-                            key={preset.label}
-                            onClick={() => setFontSize(preset.value)}
-                            className="w-full text-left p-3.5 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
-                            style={cardStyle(fontSize === preset.value)}
-                          >
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="font-display text-sm font-medium">{preset.label}</span>
-                              {fontSize === preset.value && (
-                                <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
-                                  <Check className="size-3 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-xs opacity-70">{preset.desc}</p>
-                          </button>
-                        ))}
-                      </div>
-
-                      <div>
-                        <Label className="text-xs font-display font-medium mb-2 block">Custom Scale</Label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0.7"
-                            max="1.3"
-                            step="0.01"
-                            value={fontSize}
-                            onChange={e => setFontSize(parseFloat(e.target.value))}
-                            className="flex-1 accent-primary h-2 cursor-pointer"
-                            style={{ accentColor: 'var(--primary)' }}
-                          />
-                          <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(fontSize * 100)}%</span>
+              {/* Tab Content — scrollable with scroll-to-top */}
+              <div className="relative flex-1 overflow-hidden">
+                <div
+                  ref={scrollContainerRef}
+                  className="h-full overflow-y-auto"
+                  style={{ background: 'var(--md3-surface-container-lowest)' }}
+                >
+                  <div className="p-5 lg:p-6">
+                    {/* Info tab contents */}
+                    <TabsContent value="personal" className="mt-0">
+                      <PersonalInfoForm />
+                    </TabsContent>
+                    <TabsContent value="experience" className="mt-0">
+                      <ExperienceForm />
+                    </TabsContent>
+                    <TabsContent value="education" className="mt-0">
+                      <EducationForm />
+                    </TabsContent>
+                    <TabsContent value="skills" className="mt-0">
+                      <SkillsForm />
+                    </TabsContent>
+                    <TabsContent value="projects" className="mt-0">
+                      <ProjectsForm />
+                    </TabsContent>
+                    <TabsContent value="certifications" className="mt-0">
+                      <CertificationsForm />
+                    </TabsContent>
+                    <TabsContent value="order" className="mt-0">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Section Order</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Drag to reorder how sections appear on your resume.</p>
                         </div>
+                        <DraggableSections />
                       </div>
+                    </TabsContent>
 
-                      <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
-
-                      {/* Line Spacing */}
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Line Spacing</h3>
-                        <p className="text-sm text-muted-foreground mb-3">Control vertical spacing between lines.</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        {LINE_SPACING_PRESETS.map(preset => (
-                          <button
-                            key={preset.label}
-                            onClick={() => setLineSpacing(preset.value)}
-                            className="text-left p-3.5 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
-                            style={cardStyle(lineSpacing === preset.value)}
-                          >
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="font-display text-xs font-medium">{preset.label}</span>
-                              {lineSpacing === preset.value && (
-                                <div className="size-4 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
-                                  <Check className="size-2.5 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-[10px] opacity-70">{preset.desc}</p>
-                          </button>
-                        ))}
-                      </div>
-
-                      <div>
-                        <Label className="text-xs font-display font-medium mb-2 block">Custom Spacing</Label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0.7"
-                            max="1.5"
-                            step="0.01"
-                            value={lineSpacing}
-                            onChange={e => setLineSpacing(parseFloat(e.target.value))}
-                            className="flex-1 accent-primary h-2 cursor-pointer"
-                            style={{ accentColor: 'var(--primary)' }}
-                          />
-                          <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(lineSpacing * 100)}%</span>
+                    {/* Design tab contents */}
+                    <TabsContent value="templates" className="mt-0">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Templates</h3>
+                          <p className="text-sm text-muted-foreground">Choose a layout for your resume.</p>
                         </div>
-                      </div>
-
-                      <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
-
-                      {/* Margins */}
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Page Margins</h3>
-                        <p className="text-sm text-muted-foreground mb-3">Adjust the whitespace around your content.</p>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        {MARGIN_PRESETS.map(preset => (
-                          <button
-                            key={preset.label}
-                            onClick={() => setMarginSize(preset.value)}
-                            className="text-left p-3 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
-                            style={cardStyle(marginSize === preset.value)}
-                          >
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="font-display text-xs font-medium">{preset.label}</span>
-                              {marginSize === preset.value && (
-                                <div className="size-4 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
-                                  <Check className="size-2.5 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-[10px] opacity-70">{preset.desc}</p>
-                          </button>
-                        ))}
-                      </div>
-
-                      <div>
-                        <Label className="text-xs font-display font-medium mb-2 block">Custom Margins</Label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0.4"
-                            max="1.6"
-                            step="0.01"
-                            value={marginSize}
-                            onChange={e => setMarginSize(parseFloat(e.target.value))}
-                            className="flex-1 accent-primary h-2 cursor-pointer"
-                            style={{ accentColor: 'var(--primary)' }}
-                          />
-                          <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(marginSize * 100)}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="colors" className="mt-0">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-display text-lg font-medium mb-1">Accent Color</h3>
-                        <p className="text-sm text-muted-foreground">Personalize your resume with a custom accent color.</p>
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-3">
-                        {PRESET_COLORS.map(color => (
-                          <button
-                            key={color}
-                            onClick={() => setAccentColor(color)}
-                            className="group relative aspect-square rounded-2xl transition-all hover:scale-105"
-                            style={{
-                              backgroundColor: color,
-                              border: accentColor === color ? '3px solid var(--foreground)' : '2px solid transparent',
-                              boxShadow: accentColor === color ? '0 0 0 2px var(--background)' : 'none',
-                            }}
-                          >
-                            {accentColor === color && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <Check className="size-4 text-white drop-shadow-md" />
+                        <div className="grid grid-cols-2 gap-3">
+                          {TEMPLATES.map(t => (
+                            <button
+                              key={t.id}
+                              onClick={() => setSelectedTemplate(t.id)}
+                              className="text-left p-4 rounded-2xl transition-all hover:shadow-md md3-state-layer"
+                              style={cardStyle(selectedTemplate === t.id)}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-display text-sm font-medium">{t.label}</span>
+                                {selectedTemplate === t.id && (
+                                  <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                    <Check className="size-3 text-white" />
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
-
-                      <div>
-                        <Label className="text-xs font-display font-medium mb-2 block">Custom Color</Label>
-                        <div className="flex items-center gap-3">
-                          <Input
-                            type="color"
-                            value={accentColor}
-                            onChange={e => setAccentColor(e.target.value)}
-                            className="w-12 h-10 p-1 cursor-pointer rounded-xl"
-                            style={{ border: '2px solid var(--md3-outline-variant)' }}
-                          />
-                          <Input
-                            value={accentColor}
-                            onChange={e => setAccentColor(e.target.value)}
-                            placeholder="#6750A4"
-                            className="h-10 text-sm font-mono-accent flex-1 rounded-xl"
-                            style={{ border: '1px solid var(--md3-outline-variant)' }}
-                          />
-                          <div
-                            className="h-10 w-20 rounded-xl shrink-0"
-                            style={{ backgroundColor: accentColor, border: '1px solid var(--md3-outline-variant)' }}
-                          />
+                              <p className="text-xs opacity-70 leading-relaxed">{t.desc}</p>
+                            </button>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  </TabsContent>
+                    </TabsContent>
+
+                    <TabsContent value="fonts" className="mt-0">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Font Pairing</h3>
+                          <p className="text-sm text-muted-foreground">Select a heading + body font combination.</p>
+                        </div>
+                        <div className="space-y-2">
+                          {FONT_PAIRINGS.map(font => (
+                            <button
+                              key={font.id}
+                              onClick={() => setSelectedFont(font.id)}
+                              className="w-full text-left p-4 rounded-2xl transition-all hover:shadow-md md3-state-layer"
+                              style={cardStyle(selectedFont.id === font.id)}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium" style={{ fontFamily: font.heading }}>{font.name}</span>
+                                {selectedFont.id === font.id && (
+                                  <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                    <Check className="size-3 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex gap-4 text-xs opacity-70">
+                                <span style={{ fontFamily: font.heading, fontWeight: 600 }}>Heading</span>
+                                <span style={{ fontFamily: font.body }}>Body text sample</span>
+                              </div>
+                              <p className="mt-2 text-[13px] leading-relaxed opacity-80" style={{ fontFamily: font.body }}>
+                                The quick brown fox jumps over the lazy dog.
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="size" className="mt-0">
+                      <div className="space-y-5">
+                        {/* Font Size */}
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Font Size</h3>
+                          <p className="text-sm text-muted-foreground">Adjust the text size across your entire resume.</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          {FONT_SIZE_PRESETS.map(preset => (
+                            <button
+                              key={preset.label}
+                              onClick={() => setFontSize(preset.value)}
+                              className="w-full text-left p-3.5 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
+                              style={cardStyle(fontSize === preset.value)}
+                            >
+                              <div className="flex items-center justify-between mb-0.5">
+                                <span className="font-display text-sm font-medium">{preset.label}</span>
+                                {fontSize === preset.value && (
+                                  <div className="size-5 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                    <Check className="size-3 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-xs opacity-70">{preset.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div>
+                          <Label className="text-xs font-display font-medium mb-2 block">Custom Scale</Label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0.7"
+                              max="1.3"
+                              step="0.01"
+                              value={fontSize}
+                              onChange={e => setFontSize(parseFloat(e.target.value))}
+                              className="flex-1 accent-primary h-2 cursor-pointer"
+                              style={{ accentColor: 'var(--primary)' }}
+                            />
+                            <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(fontSize * 100)}%</span>
+                          </div>
+                        </div>
+
+                        <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
+
+                        {/* Line Spacing */}
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Line Spacing</h3>
+                          <p className="text-sm text-muted-foreground mb-3">Control vertical spacing between lines.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          {LINE_SPACING_PRESETS.map(preset => (
+                            <button
+                              key={preset.label}
+                              onClick={() => setLineSpacing(preset.value)}
+                              className="text-left p-3.5 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
+                              style={cardStyle(lineSpacing === preset.value)}
+                            >
+                              <div className="flex items-center justify-between mb-0.5">
+                                <span className="font-display text-xs font-medium">{preset.label}</span>
+                                {lineSpacing === preset.value && (
+                                  <div className="size-4 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                    <Check className="size-2.5 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-[10px] opacity-70">{preset.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div>
+                          <Label className="text-xs font-display font-medium mb-2 block">Custom Spacing</Label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0.7"
+                              max="1.5"
+                              step="0.01"
+                              value={lineSpacing}
+                              onChange={e => setLineSpacing(parseFloat(e.target.value))}
+                              className="flex-1 accent-primary h-2 cursor-pointer"
+                              style={{ accentColor: 'var(--primary)' }}
+                            />
+                            <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(lineSpacing * 100)}%</span>
+                          </div>
+                        </div>
+
+                        <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
+
+                        {/* Margins */}
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Page Margins</h3>
+                          <p className="text-sm text-muted-foreground mb-3">Adjust the whitespace around your content.</p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          {MARGIN_PRESETS.map(preset => (
+                            <button
+                              key={preset.label}
+                              onClick={() => setMarginSize(preset.value)}
+                              className="text-left p-3 rounded-2xl transition-all hover:shadow-sm md3-state-layer"
+                              style={cardStyle(marginSize === preset.value)}
+                            >
+                              <div className="flex items-center justify-between mb-0.5">
+                                <span className="font-display text-xs font-medium">{preset.label}</span>
+                                {marginSize === preset.value && (
+                                  <div className="size-4 rounded-full flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+                                    <Check className="size-2.5 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-[10px] opacity-70">{preset.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div>
+                          <Label className="text-xs font-display font-medium mb-2 block">Custom Margins</Label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0.4"
+                              max="1.6"
+                              step="0.01"
+                              value={marginSize}
+                              onChange={e => setMarginSize(parseFloat(e.target.value))}
+                              className="flex-1 accent-primary h-2 cursor-pointer"
+                              style={{ accentColor: 'var(--primary)' }}
+                            />
+                            <span className="text-sm font-mono-accent text-muted-foreground w-14 text-right">{Math.round(marginSize * 100)}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="colors" className="mt-0">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="font-display text-lg font-medium mb-1">Accent Color</h3>
+                          <p className="text-sm text-muted-foreground">Personalize your resume with a custom accent color.</p>
+                        </div>
+
+                        <div className="grid grid-cols-5 gap-3">
+                          {PRESET_COLORS.map(color => (
+                            <button
+                              key={color}
+                              onClick={() => setAccentColor(color)}
+                              className="group relative aspect-square rounded-2xl transition-all hover:scale-105"
+                              style={{
+                                backgroundColor: color,
+                                border: accentColor === color ? '3px solid var(--foreground)' : '2px solid transparent',
+                                boxShadow: accentColor === color ? '0 0 0 2px var(--background)' : 'none',
+                              }}
+                            >
+                              {accentColor === color && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <Check className="size-4 text-white drop-shadow-md" />
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
+
+                        <div>
+                          <Label className="text-xs font-display font-medium mb-2 block">Custom Color</Label>
+                          <div className="flex items-center gap-3">
+                            <Input
+                              type="color"
+                              value={accentColor}
+                              onChange={e => setAccentColor(e.target.value)}
+                              className="w-12 h-10 p-1 cursor-pointer rounded-xl"
+                              style={{ border: '2px solid var(--md3-outline-variant)' }}
+                            />
+                            <Input
+                              value={accentColor}
+                              onChange={e => setAccentColor(e.target.value)}
+                              placeholder="#6750A4"
+                              className="h-10 text-sm font-mono-accent flex-1 rounded-xl"
+                              style={{ border: '1px solid var(--md3-outline-variant)' }}
+                            />
+                            <div
+                              className="h-10 w-20 rounded-xl shrink-0"
+                              style={{ backgroundColor: accentColor, border: '1px solid var(--md3-outline-variant)' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </div>
                 </div>
+
+                {/* Scroll-to-top floating button */}
+                <AnimatePresence>
+                  {showScrollTop && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+                      className="absolute bottom-16 right-4 z-10"
+                    >
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={scrollToTop}
+                            className="size-11 rounded-full flex items-center justify-center shadow-lg transition-colors duration-200 hover:shadow-xl"
+                            style={{
+                              background: 'var(--md3-primary-container)',
+                              color: 'var(--md3-on-primary-container)',
+                              border: '1px solid var(--md3-outline-variant)',
+                            }}
+                            aria-label="Scroll to top"
+                          >
+                            <ChevronUp className="size-5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" sideOffset={8}>Scroll to top</TooltipContent>
+                      </Tooltip>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Auto-save indicator */}
