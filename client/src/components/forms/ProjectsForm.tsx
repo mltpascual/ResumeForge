@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Plus, X, GripVertical } from 'lucide-react';
+import { Plus, X, GripVertical, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DndContext,
   closestCenter,
@@ -29,10 +30,11 @@ interface SortableProjectCardProps {
   proj: Project;
   index: number;
   onRemove: (id: string) => void;
+  onDuplicate: (id: string) => void;
   onUpdate: (id: string, field: string, value: string) => void;
 }
 
-function SortableProjectCard({ proj, index, onRemove, onUpdate }: SortableProjectCardProps) {
+function SortableProjectCard({ proj, index, onRemove, onDuplicate, onUpdate }: SortableProjectCardProps) {
   const {
     attributes,
     listeners,
@@ -72,14 +74,24 @@ function SortableProjectCard({ proj, index, onRemove, onUpdate }: SortableProjec
                 Project {String(index + 1).padStart(2, '0')}
               </span>
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" onClick={() => onRemove(proj.id)} className="text-muted-foreground hover:text-destructive">
-                  <X className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Remove entry</TooltipContent>
-            </Tooltip>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" onClick={() => { onDuplicate(proj.id); toast.success('Project duplicated'); }} className="text-muted-foreground hover:text-foreground">
+                    <Copy className="size-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Duplicate entry</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" onClick={() => onRemove(proj.id)} className="text-muted-foreground hover:text-destructive">
+                    <X className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Remove entry</TooltipContent>
+              </Tooltip>
+            </div>
           </div>
           <Separator />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -108,7 +120,7 @@ function SortableProjectCard({ proj, index, onRemove, onUpdate }: SortableProjec
 }
 
 export default function ProjectsForm() {
-  const { resumeData, addProject, updateProject, removeProject, reorderProjects } = useResume();
+  const { resumeData, addProject, duplicateProject, updateProject, removeProject, reorderProjects } = useResume();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -144,6 +156,7 @@ export default function ProjectsForm() {
                 proj={proj}
                 index={index}
                 onRemove={removeProject}
+                onDuplicate={duplicateProject}
                 onUpdate={updateProject}
               />
             ))}

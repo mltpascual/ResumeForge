@@ -15,7 +15,7 @@ import {
   ZoomIn, ZoomOut, User, Briefcase, GraduationCap,
   Wrench, FolderOpen, Award, Save, ArrowUpDown,
   Upload, Palette, Printer, Type, LayoutTemplate, ALargeSmall,
-  Check, ChevronUp,
+  Check, ChevronUp, Eye, X,
 } from 'lucide-react';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
 import ExperienceForm from '@/components/forms/ExperienceForm';
@@ -151,6 +151,7 @@ export default function Editor() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [recruiterMode, setRecruiterMode] = useState(false);
 
   // Track scroll position for scroll-to-top button
   useEffect(() => {
@@ -362,6 +363,15 @@ export default function Editor() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Print (Ctrl+P)</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={() => setRecruiterMode(true)}>
+                    <Eye className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Preview as recruiter</TooltipContent>
               </Tooltip>
 
               {/* MD3 Filled Button for Export */}
@@ -810,6 +820,64 @@ export default function Editor() {
           </div>
         </div>
       </div>
+
+      {/* Recruiter Preview Mode — Full-screen overlay */}
+      <AnimatePresence>
+        {recruiterMode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+            className="fixed inset-0 z-50 flex flex-col"
+            style={{ background: 'var(--md3-surface-container)' }}
+          >
+            {/* Recruiter mode top bar */}
+            <div className="shrink-0 flex items-center justify-between px-6 h-14" style={{ background: 'var(--md3-surface-container-low)', borderBottom: '1px solid var(--md3-outline-variant)' }}>
+              <div className="flex items-center gap-3">
+                <Eye className="size-5" style={{ color: 'var(--md3-primary)' }} />
+                <span className="font-display text-sm font-medium">Recruiter Preview</span>
+                <span className="text-xs text-muted-foreground">Full-width read-only view</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={handleExportPDF} disabled={exporting} className="gap-1.5 h-9 text-xs rounded-full px-3">
+                  <Download className="size-4" />
+                  <span className="font-medium">{exporting ? 'Exporting...' : 'Export PDF'}</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handlePrint} className="gap-1.5 h-9 text-xs rounded-full px-3">
+                  <Printer className="size-4" />
+                  <span className="font-medium">Print</span>
+                </Button>
+                <div className="w-px h-6 mx-1" style={{ background: 'var(--md3-outline-variant)' }} />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-10 rounded-full" onClick={() => setRecruiterMode(false)}>
+                      <X className="size-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Exit recruiter preview</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+
+            {/* Recruiter mode resume */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="py-10 flex justify-center">
+                <motion.div
+                  initial={{ scale: 0.95, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.95, y: 20 }}
+                  transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+                >
+                  <div className="bg-white md3-elevation-3 rounded-lg" style={{ width: '800px', minHeight: '1131px' }}>
+                    <ResumePreview />
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

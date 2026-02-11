@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Plus, X, GripVertical } from 'lucide-react';
+import { Plus, X, GripVertical, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DndContext,
   closestCenter,
@@ -29,10 +30,11 @@ interface SortableCertCardProps {
   cert: Certification;
   index: number;
   onRemove: (id: string) => void;
+  onDuplicate: (id: string) => void;
   onUpdate: (id: string, field: string, value: string) => void;
 }
 
-function SortableCertCard({ cert, index, onRemove, onUpdate }: SortableCertCardProps) {
+function SortableCertCard({ cert, index, onRemove, onDuplicate, onUpdate }: SortableCertCardProps) {
   const {
     attributes,
     listeners,
@@ -72,14 +74,24 @@ function SortableCertCard({ cert, index, onRemove, onUpdate }: SortableCertCardP
                 Certification {String(index + 1).padStart(2, '0')}
               </span>
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" onClick={() => onRemove(cert.id)} className="text-muted-foreground hover:text-destructive">
-                  <X className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Remove entry</TooltipContent>
-            </Tooltip>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" onClick={() => { onDuplicate(cert.id); toast.success('Certification duplicated'); }} className="text-muted-foreground hover:text-foreground">
+                    <Copy className="size-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Duplicate entry</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" onClick={() => onRemove(cert.id)} className="text-muted-foreground hover:text-destructive">
+                    <X className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Remove entry</TooltipContent>
+              </Tooltip>
+            </div>
           </div>
           <Separator />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -113,7 +125,7 @@ function SortableCertCard({ cert, index, onRemove, onUpdate }: SortableCertCardP
 }
 
 export default function CertificationsForm() {
-  const { resumeData, addCertification, updateCertification, removeCertification, reorderCertifications } = useResume();
+  const { resumeData, addCertification, duplicateCertification, updateCertification, removeCertification, reorderCertifications } = useResume();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -149,6 +161,7 @@ export default function CertificationsForm() {
                 cert={cert}
                 index={index}
                 onRemove={removeCertification}
+                onDuplicate={duplicateCertification}
                 onUpdate={updateCertification}
               />
             ))}

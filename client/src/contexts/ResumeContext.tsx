@@ -44,10 +44,12 @@ interface ResumeContextType {
   reorderEducation: (oldIndex: number, newIndex: number) => void;
   updateSkills: (skills: string) => void;
   addProject: () => void;
+  duplicateProject: (id: string) => void;
   updateProject: (id: string, field: string, value: string) => void;
   removeProject: (id: string) => void;
   reorderProjects: (oldIndex: number, newIndex: number) => void;
   addCertification: () => void;
+  duplicateCertification: (id: string) => void;
   updateCertification: (id: string, field: string, value: string) => void;
   removeCertification: (id: string) => void;
   reorderCertifications: (oldIndex: number, newIndex: number) => void;
@@ -291,6 +293,18 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const duplicateProject = useCallback((id: string) => {
+    setResumeData(prev => {
+      const idx = prev.projects.findIndex(p => p.id === id);
+      if (idx === -1) return prev;
+      const original = prev.projects[idx];
+      const copy = { ...original, id: generateId() };
+      const updated = [...prev.projects];
+      updated.splice(idx + 1, 0, copy);
+      return { ...prev, projects: updated };
+    });
+  }, []);
+
   const updateProject = useCallback((id: string, field: string, value: string) => {
     setResumeData(prev => ({
       ...prev,
@@ -323,6 +337,18 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
         id: generateId(), name: '', issuer: '', date: '', link: '',
       }],
     }));
+  }, []);
+
+  const duplicateCertification = useCallback((id: string) => {
+    setResumeData(prev => {
+      const idx = prev.certifications.findIndex(c => c.id === id);
+      if (idx === -1) return prev;
+      const original = prev.certifications[idx];
+      const copy = { ...original, id: generateId() };
+      const updated = [...prev.certifications];
+      updated.splice(idx + 1, 0, copy);
+      return { ...prev, certifications: updated };
+    });
   }, []);
 
   const updateCertification = useCallback((id: string, field: string, value: string) => {
@@ -433,8 +459,8 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       addExperience, duplicateExperience, updateExperience, removeExperience, reorderExperiences,
       addEducation, duplicateEducation, updateEducation, removeEducation, reorderEducation,
       updateSkills,
-      addProject, updateProject, removeProject, reorderProjects,
-      addCertification, updateCertification, removeCertification, reorderCertifications,
+      addProject, duplicateProject, updateProject, removeProject, reorderProjects,
+      addCertification, duplicateCertification, updateCertification, removeCertification, reorderCertifications,
       selectedTemplate, setSelectedTemplate,
       loadSampleData, clearAllData,
       activeSection, setActiveSection,
