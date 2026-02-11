@@ -1,5 +1,5 @@
 /*
- * Resume Preview Templates with section order support
+ * Resume Preview Templates with section order + accent color support
  * Templates: Classic, Modern, Executive
  * All use inline styles for PDF export fidelity.
  */
@@ -16,6 +16,25 @@ function formatDate(dateStr: string): string {
   return `${months[parseInt(month) - 1]} ${year}`;
 }
 
+// Determine if a hex color is light or dark
+function isLightColor(hex: string): boolean {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5;
+}
+
+// Lighten a hex color for subtle backgrounds
+function lightenColor(hex: string, amount: number): string {
+  const c = hex.replace('#', '');
+  const r = Math.min(255, parseInt(c.substring(0, 2), 16) + Math.round(255 * amount));
+  const g = Math.min(255, parseInt(c.substring(2, 4), 16) + Math.round(255 * amount));
+  const b = Math.min(255, parseInt(c.substring(4, 6), 16) + Math.round(255 * amount));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 const emptyState = (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: '60px' }}>
     <div>
@@ -29,9 +48,10 @@ const emptyState = (
   </div>
 );
 
-// ============ SECTION RENDERERS (shared across templates) ============
+// ============ SECTION RENDERERS ============
 
 interface SectionColors {
+  accent: string;
   black: string;
   body: string;
   muted: string;
@@ -144,25 +164,25 @@ function renderOrderedSections(data: ResumeData, order: SectionId[], colors: Sec
 }
 
 // ============ CLASSIC TEMPLATE ============
-function ClassicTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder: SectionId[] }) {
+function ClassicTemplate({ data, sectionOrder, accent }: { data: ResumeData; sectionOrder: SectionId[]; accent: string }) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
-  const colors: SectionColors = { black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
+  const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
   const headingStyle: React.CSSProperties = {
     fontFamily: "'Space Grotesk', sans-serif", fontSize: '11px', fontWeight: 700,
-    textTransform: 'uppercase', letterSpacing: '0.12em', color: colors.black,
-    borderBottom: `1px solid ${colors.line}`, paddingBottom: '4px', marginBottom: '12px',
+    textTransform: 'uppercase', letterSpacing: '0.12em', color: accent,
+    borderBottom: `2px solid ${accent}`, paddingBottom: '4px', marginBottom: '12px',
   };
 
   return (
     <div style={{ fontFamily: "'Archivo', sans-serif", color: colors.black, padding: '44px 40px', lineHeight: 1.5 }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: `1px solid ${colors.black}` }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: `2px solid ${accent}` }}>
         <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px', color: colors.black }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '13px', color: colors.muted, marginBottom: '10px', fontWeight: 400, letterSpacing: '0.02em' }}>{personalInfo.title}</p>
+          <p style={{ fontSize: '13px', color: accent, marginBottom: '10px', fontWeight: 500, letterSpacing: '0.02em' }}>{personalInfo.title}</p>
         )}
         <div style={{ fontSize: '10px', color: colors.muted, display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '4px 14px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.02em' }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}
@@ -183,36 +203,35 @@ function ClassicTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrde
 }
 
 // ============ MODERN TEMPLATE ============
-function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder: SectionId[] }) {
+function ModernTemplate({ data, sectionOrder, accent }: { data: ResumeData; sectionOrder: SectionId[]; accent: string }) {
   const { personalInfo, skills, certifications } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
-  const colors: SectionColors = { black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
+  const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
+  const sidebarBg = accent;
+  const sidebarText = isLightColor(accent) ? '#09090B' : '#FAFAFA';
+  const sidebarMuted = isLightColor(accent) ? '#3f3f46' : '#A1A1AA';
+  const sidebarSubtle = isLightColor(accent) ? '#71717A' : '#71717A';
 
-  // Sidebar sections: skills + certifications (always in sidebar)
-  // Main sections: experiences, education, projects (ordered)
   const mainSections = sectionOrder.filter(s => s !== 'skills' && s !== 'certifications');
   const mainHeadingStyle: React.CSSProperties = {
     fontFamily: "'Space Grotesk', sans-serif", fontSize: '10px', fontWeight: 700,
-    textTransform: 'uppercase', letterSpacing: '0.12em', color: colors.black, marginBottom: '14px',
+    textTransform: 'uppercase', letterSpacing: '0.12em', color: accent, marginBottom: '14px',
   };
-
-  // For main content, use bordered variant
-  const borderedHeadingStyle: React.CSSProperties = { ...mainHeadingStyle };
 
   return (
     <div style={{ fontFamily: "'Archivo', sans-serif", color: colors.black, display: 'flex', minHeight: '100%' }}>
       {/* Left Sidebar */}
-      <div style={{ width: '35%', backgroundColor: '#18181B', color: '#D4D4D8', padding: '36px 22px' }}>
-        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '22px', fontWeight: 700, marginBottom: '2px', color: '#FAFAFA', letterSpacing: '-0.03em' }}>
+      <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: '36px 22px' }}>
+        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '22px', fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '11px', color: '#A1A1AA', marginBottom: '24px', fontWeight: 400 }}>{personalInfo.title}</p>
+          <p style={{ fontSize: '11px', color: sidebarMuted, marginBottom: '24px', fontWeight: 400 }}>{personalInfo.title}</p>
         )}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#71717A', marginBottom: '10px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Contact</h3>
-          <div style={{ fontSize: '10.5px', lineHeight: 1.8, color: '#A1A1AA' }}>
+          <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '10px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Contact</h3>
+          <div style={{ fontSize: '10.5px', lineHeight: 1.8, color: sidebarMuted }}>
             {personalInfo.email && <p>{personalInfo.email}</p>}
             {personalInfo.phone && <p>{personalInfo.phone}</p>}
             {personalInfo.location && <p>{personalInfo.location}</p>}
@@ -222,21 +241,21 @@ function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder
         </div>
         {skills.length > 0 && (
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#71717A', marginBottom: '12px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Skills</h3>
+            <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Skills</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               {skills.map(skill => (
-                <span key={skill.id} style={{ fontSize: '10.5px', color: '#D4D4D8' }}>{skill.name}</span>
+                <span key={skill.id} style={{ fontSize: '10.5px', color: sidebarText }}>{skill.name}</span>
               ))}
             </div>
           </div>
         )}
         {certifications.length > 0 && (
           <div>
-            <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#71717A', marginBottom: '12px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Certifications</h3>
+            <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Certifications</h3>
             {certifications.map(cert => (
               <div key={cert.id} style={{ marginBottom: '10px' }}>
-                <p style={{ fontSize: '10.5px', fontWeight: 500, color: '#FAFAFA' }}>{cert.name}</p>
-                <p style={{ fontSize: '9.5px', color: '#71717A' }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
+                <p style={{ fontSize: '10.5px', fontWeight: 500, color: sidebarText }}>{cert.name}</p>
+                <p style={{ fontSize: '9.5px', color: sidebarSubtle }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
               </div>
             ))}
           </div>
@@ -247,12 +266,12 @@ function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder
       <div style={{ width: '65%', padding: '36px 28px' }}>
         {personalInfo.summary && (
           <div style={{ marginBottom: '22px' }}>
-            <h2 style={borderedHeadingStyle}>Profile</h2>
+            <h2 style={mainHeadingStyle}>Profile</h2>
             <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.7 }}>{personalInfo.summary}</p>
           </div>
         )}
         {mainSections.map(sectionId => {
-          const borderStyle: React.CSSProperties = { ...borderedHeadingStyle };
+          const borderStyle: React.CSSProperties = { ...mainHeadingStyle };
           switch (sectionId) {
             case 'experiences':
               if (data.experiences.length === 0) return null;
@@ -260,7 +279,7 @@ function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder
                 <div key="experiences" style={{ marginBottom: '22px' }}>
                   <h2 style={borderStyle}>Experience</h2>
                   {data.experiences.map(exp => (
-                    <div key={exp.id} style={{ marginBottom: '14px', paddingLeft: '12px', borderLeft: `1px solid ${colors.line}` }}>
+                    <div key={exp.id} style={{ marginBottom: '14px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                         <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '12px', fontWeight: 600, color: colors.black }}>{exp.position}</h3>
                         <span style={{ fontSize: '9.5px', color: colors.muted, whiteSpace: 'nowrap', fontFamily: "'JetBrains Mono', monospace" }}>
@@ -281,7 +300,7 @@ function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder
                 <div key="education" style={{ marginBottom: '22px' }}>
                   <h2 style={borderStyle}>Education</h2>
                   {data.education.map(edu => (
-                    <div key={edu.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `1px solid ${colors.line}` }}>
+                    <div key={edu.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                         <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
                         <span style={{ fontSize: '9.5px', color: colors.muted, fontFamily: "'JetBrains Mono', monospace" }}>{edu.startDate} — {edu.endDate}</span>
@@ -299,7 +318,7 @@ function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder
                 <div key="projects" style={{ marginBottom: '22px' }}>
                   <h2 style={borderStyle}>Projects</h2>
                   {data.projects.map(proj => (
-                    <div key={proj.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `1px solid ${colors.line}` }}>
+                    <div key={proj.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '11.5px', fontWeight: 600, color: colors.black }}>{proj.name}</h3>
                       {proj.technologies && <p style={{ fontSize: '9.5px', color: colors.muted, fontFamily: "'JetBrains Mono', monospace" }}>{proj.technologies}</p>}
                       {proj.description && <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.5 }}>{proj.description}</p>}
@@ -317,34 +336,34 @@ function ModernTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder
 }
 
 // ============ EXECUTIVE TEMPLATE ============
-function ExecutiveTemplate({ data, sectionOrder }: { data: ResumeData; sectionOrder: SectionId[] }) {
+function ExecutiveTemplate({ data, sectionOrder, accent }: { data: ResumeData; sectionOrder: SectionId[]; accent: string }) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
-  const colors: SectionColors = { black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
+  const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
+  const headerText = isLightColor(accent) ? '#09090B' : '#FAFAFA';
+  const headerMuted = isLightColor(accent) ? '#3f3f46' : '#A1A1AA';
   const headingStyle: React.CSSProperties = {
     fontFamily: "'Space Grotesk', sans-serif", fontSize: '11px', fontWeight: 700,
-    color: colors.black, textTransform: 'uppercase', letterSpacing: '0.1em',
-    marginBottom: '12px', borderBottom: `1px solid ${colors.line}`, paddingBottom: '4px',
+    color: accent, textTransform: 'uppercase', letterSpacing: '0.1em',
+    marginBottom: '12px', borderBottom: `2px solid ${accent}`, paddingBottom: '4px',
   };
 
-  // Executive uses a special layout: experience full-width on top, then two-column below
-  // We respect order for the two-column sections
   const leftSections = sectionOrder.filter(s => s === 'education' || s === 'projects');
   const rightSections = sectionOrder.filter(s => s === 'skills' || s === 'certifications');
 
   return (
     <div style={{ fontFamily: "'Archivo', sans-serif", color: colors.black }}>
-      <div style={{ backgroundColor: '#09090B', padding: '28px 40px', color: '#FAFAFA' }}>
+      <div style={{ backgroundColor: accent, padding: '28px 40px', color: headerText }}>
         <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '26px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '2px' }}>
           {personalInfo.fullName?.toUpperCase() || 'YOUR NAME'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: '12px', color: '#A1A1AA', fontWeight: 400, letterSpacing: '0.04em' }}>{personalInfo.title}</p>
+          <p style={{ fontSize: '12px', color: headerMuted, fontWeight: 400, letterSpacing: '0.04em' }}>{personalInfo.title}</p>
         )}
       </div>
 
-      <div style={{ backgroundColor: '#F4F4F5', padding: '8px 40px', display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: '9.5px', color: colors.muted, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.02em' }}>
+      <div style={{ backgroundColor: lightenColor(accent, 0.7), padding: '8px 40px', display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: '9.5px', color: colors.muted, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.02em' }}>
         {personalInfo.email && <span>{personalInfo.email}</span>}
         {personalInfo.phone && <span>{personalInfo.phone}</span>}
         {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -354,7 +373,7 @@ function ExecutiveTemplate({ data, sectionOrder }: { data: ResumeData; sectionOr
 
       <div style={{ padding: '24px 40px' }}>
         {personalInfo.summary && (
-          <div style={{ marginBottom: '22px', borderLeft: `2px solid ${colors.black}`, paddingLeft: '14px' }}>
+          <div style={{ marginBottom: '22px', borderLeft: `3px solid ${accent}`, paddingLeft: '14px' }}>
             <p style={{ fontSize: '11.5px', color: colors.body, lineHeight: 1.7 }}>{personalInfo.summary}</p>
           </div>
         )}
@@ -461,9 +480,9 @@ function ExecutiveTemplate({ data, sectionOrder }: { data: ResumeData; sectionOr
 
 // ============ MAIN PREVIEW COMPONENT ============
 const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
-  const { resumeData, selectedTemplate, sectionOrder } = useResume();
+  const { resumeData, selectedTemplate, sectionOrder, accentColor } = useResume();
 
-  const templates: Record<TemplateId, React.ComponentType<{ data: ResumeData; sectionOrder: SectionId[] }>> = {
+  const templates: Record<TemplateId, React.ComponentType<{ data: ResumeData; sectionOrder: SectionId[]; accent: string }>> = {
     classic: ClassicTemplate,
     modern: ModernTemplate,
     executive: ExecutiveTemplate,
@@ -483,7 +502,7 @@ const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
         transformOrigin: 'top left',
       }}
     >
-      <Template data={resumeData} sectionOrder={sectionOrder} />
+      <Template data={resumeData} sectionOrder={sectionOrder} accent={accentColor} />
     </div>
   );
 });

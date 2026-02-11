@@ -34,7 +34,6 @@ export interface Education {
 export interface Skill {
   id: string;
   name: string;
-  level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 }
 
 export interface Project {
@@ -155,14 +154,14 @@ export const sampleResumeData: ResumeData = {
     },
   ],
   skills: [
-    { id: '1', name: 'Figma', level: 'expert' },
-    { id: '2', name: 'Design Systems', level: 'expert' },
-    { id: '3', name: 'User Research', level: 'advanced' },
-    { id: '4', name: 'Prototyping', level: 'expert' },
-    { id: '5', name: 'HTML/CSS', level: 'advanced' },
-    { id: '6', name: 'React', level: 'intermediate' },
-    { id: '7', name: 'Adobe Creative Suite', level: 'expert' },
-    { id: '8', name: 'Motion Design', level: 'advanced' },
+    { id: '1', name: 'Figma' },
+    { id: '2', name: 'Design Systems' },
+    { id: '3', name: 'User Research' },
+    { id: '4', name: 'Prototyping' },
+    { id: '5', name: 'HTML/CSS' },
+    { id: '6', name: 'React' },
+    { id: '7', name: 'Adobe Creative Suite' },
+    { id: '8', name: 'Motion Design' },
   ],
   projects: [
     {
