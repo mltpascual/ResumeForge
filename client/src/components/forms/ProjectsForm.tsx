@@ -1,7 +1,7 @@
 import { useResume } from '@/contexts/ResumeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import BulletPointEditor from '@/components/BulletPointEditor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -52,10 +52,11 @@ export default function ProjectsForm() {
                   <Label>Technologies</Label>
                   <Input value={proj.technologies} onChange={e => updateProject(proj.id, 'technologies', e.target.value)} placeholder="React, TypeScript, Tailwind CSS" className="h-11 text-base" />
                 </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={proj.description} onChange={e => updateProject(proj.id, 'description', e.target.value)} placeholder="What the project does and your role..." rows={3} className="text-base min-h-[100px] resize-none" />
-                </div>
+                <BulletPointEditor
+                  value={proj.description}
+                  onChange={(val) => updateProject(proj.id, 'description', val)}
+                  placeholder="What the project does and your role..."
+                />
               </CardContent>
             </Card>
           </motion.div>

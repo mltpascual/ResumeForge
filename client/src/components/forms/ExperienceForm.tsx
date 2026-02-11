@@ -1,7 +1,7 @@
 import { useResume } from '@/contexts/ResumeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import BulletPointEditor from '@/components/BulletPointEditor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -103,16 +103,11 @@ export default function ExperienceForm() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    value={exp.description}
-                    onChange={e => updateExperience(exp.id, 'description', e.target.value)}
-                    placeholder="Key responsibilities and achievements..."
-                    rows={4}
-                    className="text-base min-h-[120px] resize-none"
-                  />
-                </div>
+                <BulletPointEditor
+                  value={exp.description}
+                  onChange={(val) => updateExperience(exp.id, 'description', val)}
+                  placeholder="Key achievement or responsibility..."
+                />
               </CardContent>
             </Card>
           </motion.div>
