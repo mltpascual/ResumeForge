@@ -27,6 +27,7 @@ import ResumePreview from '@/components/preview/ResumePreview';
 import DraggableSections from '@/components/DraggableSections';
 import ResumeCompleteness from '@/components/ResumeCompleteness';
 import ATSScoreChecker from '@/components/ATSScoreChecker';
+import JobDescriptionMatcher from '@/components/JobDescriptionMatcher';
 import type { TemplateId } from '@/types/resume';
 
 const INFO_TABS = [
@@ -365,6 +366,8 @@ export default function Editor() {
                 </TooltipTrigger>
                 <TooltipContent>Print (Ctrl+P)</TooltipContent>
               </Tooltip>
+
+              <JobDescriptionMatcher />
 
               <Tooltip>
                 <TooltipTrigger asChild>
