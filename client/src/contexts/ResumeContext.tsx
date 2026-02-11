@@ -34,9 +34,7 @@ interface ResumeContextType {
   addEducation: () => void;
   updateEducation: (id: string, field: string, value: string) => void;
   removeEducation: (id: string) => void;
-  addSkill: () => void;
-  updateSkill: (id: string, field: string, value: string) => void;
-  removeSkill: (id: string) => void;
+  updateSkills: (skills: string) => void;
   addProject: () => void;
   updateProject: (id: string, field: string, value: string) => void;
   removeProject: (id: string) => void;
@@ -65,7 +63,17 @@ const generateId = () => String(++idCounter);
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const stored = localStorage.getItem(key);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Migration: if skills is an array of objects, convert to comma-separated string
+      if (key === STORAGE_KEY && parsed.skills && Array.isArray(parsed.skills)) {
+        parsed.skills = parsed.skills
+          .map((s: { name?: string } | string) => (typeof s === 'string' ? s : s.name || ''))
+          .filter((s: string) => s.trim())
+          .join(', ');
+      }
+      return parsed;
+    }
   } catch {
     // ignore parse errors
   }
@@ -172,29 +180,9 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const addSkill = useCallback(() => {
-    setResumeData(prev => ({
-      ...prev,
-      skills: [...prev.skills, {
-        id: generateId(), name: '',
-      }],
-    }));
-  }, []);
-
-  const updateSkill = useCallback((id: string, field: string, value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      skills: prev.skills.map(skill =>
-        skill.id === id ? { ...skill, [field]: value } : skill
-      ),
-    }));
-  }, []);
-
-  const removeSkill = useCallback((id: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      skills: prev.skills.filter(skill => skill.id !== id),
-    }));
+  // Skills is now a simple string
+  const updateSkills = useCallback((skills: string) => {
+    setResumeData(prev => ({ ...prev, skills }));
   }, []);
 
   const addProject = useCallback(() => {
@@ -259,7 +247,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
   // Export resume data as JSON file
   const exportJSON = useCallback(() => {
     const exportData = {
-      version: 1,
+      version: 2,
       resumeData,
       selectedTemplate,
       sectionOrder,
@@ -281,6 +269,13 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     const text = await file.text();
     const parsed = JSON.parse(text);
     if (parsed.resumeData) {
+      // Migration: if skills is an array of objects, convert to comma-separated string
+      if (Array.isArray(parsed.resumeData.skills)) {
+        parsed.resumeData.skills = parsed.resumeData.skills
+          .map((s: { name?: string } | string) => (typeof s === 'string' ? s : s.name || ''))
+          .filter((s: string) => s.trim())
+          .join(', ');
+      }
       setResumeData(parsed.resumeData);
     }
     if (parsed.selectedTemplate) {
@@ -303,7 +298,7 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       updatePersonalInfo,
       addExperience, updateExperience, removeExperience,
       addEducation, updateEducation, removeEducation,
-      addSkill, updateSkill, removeSkill,
+      updateSkills,
       addProject, updateProject, removeProject,
       addCertification, updateCertification, removeCertification,
       selectedTemplate, setSelectedTemplate,

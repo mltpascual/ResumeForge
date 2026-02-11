@@ -74,32 +74,19 @@ export default function Editor() {
         import('html2canvas'),
       ]);
 
+      // Clone the preview element — it uses all inline styles (no oklch/Tailwind)
       const clone = el.cloneNode(true) as HTMLElement;
-      clone.style.transform = 'none';
-      clone.style.width = '800px';
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
       clone.style.top = '0';
-      clone.style.background = 'white';
-      clone.style.color = '#09090B';
+      clone.style.width = '800px';
+      clone.style.background = '#ffffff';
+      clone.style.transform = 'none';
+      clone.style.zIndex = '-1';
       document.body.appendChild(clone);
 
-      const resolveStyles = (element: HTMLElement) => {
-        const computed = window.getComputedStyle(element);
-        const propsToResolve = ['color', 'background-color', 'border-color', 'background'];
-        propsToResolve.forEach(prop => {
-          const val = computed.getPropertyValue(prop);
-          if (val && val.includes('oklch')) {
-            element.style.setProperty(prop, prop.includes('background') ? '#ffffff' : '#09090B');
-          }
-        });
-        Array.from(element.children).forEach(child => {
-          if (child instanceof HTMLElement) resolveStyles(child);
-        });
-      };
-      resolveStyles(clone);
-
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Small delay for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const canvas = await html2canvas(clone, {
         scale: 2,
@@ -108,6 +95,12 @@ export default function Editor() {
         logging: false,
         width: 800,
         windowWidth: 800,
+        onclone: (clonedDoc) => {
+          // Ensure the cloned element has no oklch colors from inherited styles
+          const root = clonedDoc.body;
+          root.style.backgroundColor = '#ffffff';
+          root.style.color = '#09090B';
+        },
       });
 
       document.body.removeChild(clone);
@@ -133,7 +126,14 @@ export default function Editor() {
         heightLeft -= pageHeight;
       }
 
-      pdf.save('resume.pdf');
+      // Use data URI for maximum compatibility
+      const pdfDataUri = pdf.output('datauristring');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfDataUri;
+      downloadLink.download = 'resume.pdf';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
       toast.success('PDF downloaded successfully');
     } catch (err) {
       console.error('PDF export error:', err);

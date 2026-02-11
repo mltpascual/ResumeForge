@@ -1,6 +1,7 @@
 /*
  * Resume Preview Templates with section order + accent color support
  * Templates: Classic, Modern, Executive
+ * Skills rendered as comma-delimited text.
  * All use inline styles for PDF export fidelity.
  */
 
@@ -16,7 +17,6 @@ function formatDate(dateStr: string): string {
   return `${months[parseInt(month) - 1]} ${year}`;
 }
 
-// Determine if a hex color is light or dark
 function isLightColor(hex: string): boolean {
   const c = hex.replace('#', '');
   const r = parseInt(c.substring(0, 2), 16);
@@ -26,7 +26,6 @@ function isLightColor(hex: string): boolean {
   return luminance > 0.5;
 }
 
-// Lighten a hex color for subtle backgrounds
 function lightenColor(hex: string, amount: number): string {
   const c = hex.replace('#', '');
   const r = Math.min(255, parseInt(c.substring(0, 2), 16) + Math.round(255 * amount));
@@ -103,17 +102,13 @@ function EducationSection({ data, colors, headingStyle }: { data: ResumeData; co
 }
 
 function SkillsSection({ data, colors, headingStyle }: { data: ResumeData; colors: SectionColors; headingStyle: React.CSSProperties }) {
-  if (data.skills.length === 0) return null;
+  if (!data.skills || !data.skills.trim()) return null;
   return (
     <div style={{ marginBottom: '22px' }}>
       <h2 style={headingStyle}>Skills</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-        {data.skills.map(skill => (
-          <span key={skill.id} style={{ fontSize: '10px', padding: '2px 8px', border: `1px solid ${colors.line}`, color: colors.body, fontFamily: "'JetBrains Mono', monospace" }}>
-            {skill.name}
-          </span>
-        ))}
-      </div>
+      <p style={{ fontSize: '11px', color: colors.body, lineHeight: 1.7 }}>
+        {data.skills}
+      </p>
     </div>
   );
 }
@@ -204,7 +199,7 @@ function ClassicTemplate({ data, sectionOrder, accent }: { data: ResumeData; sec
 
 // ============ MODERN TEMPLATE ============
 function ModernTemplate({ data, sectionOrder, accent }: { data: ResumeData; sectionOrder: SectionId[]; accent: string }) {
-  const { personalInfo, skills, certifications } = data;
+  const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
   const colors: SectionColors = { accent, black: '#09090B', body: '#3f3f46', muted: '#71717A', line: '#E4E4E7' };
@@ -239,20 +234,18 @@ function ModernTemplate({ data, sectionOrder, accent }: { data: ResumeData; sect
             {personalInfo.linkedin && <p>{personalInfo.linkedin}</p>}
           </div>
         </div>
-        {skills.length > 0 && (
+        {data.skills && data.skills.trim() && (
           <div style={{ marginBottom: '28px' }}>
             <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Skills</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              {skills.map(skill => (
-                <span key={skill.id} style={{ fontSize: '10.5px', color: sidebarText }}>{skill.name}</span>
-              ))}
-            </div>
+            <p style={{ fontSize: '10.5px', color: sidebarText, lineHeight: 1.7 }}>
+              {data.skills}
+            </p>
           </div>
         )}
-        {certifications.length > 0 && (
+        {data.certifications.length > 0 && (
           <div>
             <h3 style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>Certifications</h3>
-            {certifications.map(cert => (
+            {data.certifications.map(cert => (
               <div key={cert.id} style={{ marginBottom: '10px' }}>
                 <p style={{ fontSize: '10.5px', fontWeight: 500, color: sidebarText }}>{cert.name}</p>
                 <p style={{ fontSize: '9.5px', color: sidebarSubtle }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
@@ -441,17 +434,13 @@ function ExecutiveTemplate({ data, sectionOrder, accent }: { data: ResumeData; s
             {rightSections.map(sectionId => {
               switch (sectionId) {
                 case 'skills':
-                  if (data.skills.length === 0) return null;
+                  if (!data.skills || !data.skills.trim()) return null;
                   return (
                     <div key="skills" style={{ marginBottom: '22px' }}>
                       <h2 style={headingStyle}>Skills</h2>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                        {data.skills.map(skill => (
-                          <span key={skill.id} style={{ fontSize: '9.5px', padding: '2px 7px', border: `1px solid ${colors.line}`, color: colors.body, fontFamily: "'JetBrains Mono', monospace" }}>
-                            {skill.name}
-                          </span>
-                        ))}
-                      </div>
+                      <p style={{ fontSize: '10.5px', color: colors.body, lineHeight: 1.7 }}>
+                        {data.skills}
+                      </p>
                     </div>
                   );
                 case 'certifications':

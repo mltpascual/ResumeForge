@@ -31,11 +31,6 @@ export interface Education {
   description: string;
 }
 
-export interface Skill {
-  id: string;
-  name: string;
-}
-
 export interface Project {
   id: string;
   name: string;
@@ -56,7 +51,7 @@ export interface ResumeData {
   personalInfo: PersonalInfo;
   experiences: Experience[];
   education: Education[];
-  skills: Skill[];
+  skills: string; // Comma-separated list of skills
   projects: Project[];
   certifications: Certification[];
 }
@@ -83,7 +78,7 @@ export const defaultResumeData: ResumeData = {
   },
   experiences: [],
   education: [],
-  skills: [],
+  skills: '',
   projects: [],
   certifications: [],
 };
@@ -153,16 +148,7 @@ export const sampleResumeData: ResumeData = {
       description: '',
     },
   ],
-  skills: [
-    { id: '1', name: 'Figma' },
-    { id: '2', name: 'Design Systems' },
-    { id: '3', name: 'User Research' },
-    { id: '4', name: 'Prototyping' },
-    { id: '5', name: 'HTML/CSS' },
-    { id: '6', name: 'React' },
-    { id: '7', name: 'Adobe Creative Suite' },
-    { id: '8', name: 'Motion Design' },
-  ],
+  skills: 'Figma, Design Systems, User Research, Prototyping, HTML/CSS, React, Adobe Creative Suite, Motion Design',
   projects: [
     {
       id: '1',
