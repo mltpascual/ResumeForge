@@ -6,6 +6,12 @@ interface MonthPickerProps {
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  /** Enable "Present" toggle — for end date fields */
+  showPresent?: boolean;
+  /** Whether "Present" is currently active */
+  isPresent?: boolean;
+  /** Called when user toggles "Present" on/off */
+  onPresentChange?: (present: boolean) => void;
 }
 
 const MONTHS = [
@@ -38,12 +44,19 @@ function toValue(year: number, month: number): string {
 }
 
 function getYearRange(centerYear: number): number[] {
-  // Show a 4x3 grid of 12 years centered around the given year
   const startYear = centerYear - 5;
   return Array.from({ length: 12 }, (_, i) => startYear + i);
 }
 
-export default function MonthPicker({ value, onChange, placeholder, disabled }: MonthPickerProps) {
+export default function MonthPicker({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  showPresent,
+  isPresent,
+  onPresentChange,
+}: MonthPickerProps) {
   const [open, setOpen] = useState(false);
   const parsed = parseValue(value);
   const [viewYear, setViewYear] = useState(() => parsed?.year || new Date().getFullYear());
@@ -74,14 +87,28 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
   }, [open]);
 
   const handleSelectMonth = useCallback((month: number) => {
+    if (isPresent && onPresentChange) {
+      onPresentChange(false);
+    }
     onChange(toValue(viewYear, month));
     setOpen(false);
-  }, [viewYear, onChange]);
+  }, [viewYear, onChange, isPresent, onPresentChange]);
 
   const handleSelectYear = useCallback((year: number) => {
     setViewYear(year);
     setView('month');
   }, []);
+
+  const handlePresentToggle = useCallback(() => {
+    if (onPresentChange) {
+      const newPresent = !isPresent;
+      onPresentChange(newPresent);
+      if (newPresent) {
+        onChange('');
+        setOpen(false);
+      }
+    }
+  }, [isPresent, onPresentChange, onChange]);
 
   const isSelectedMonth = (month: number) => {
     return parsed?.year === viewYear && parsed?.month === month;
@@ -102,6 +129,15 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
 
   const yearRange = getYearRange(yearRangeCenter);
 
+  // Display text
+  const displayText = isPresent
+    ? 'Present'
+    : value
+      ? formatDisplay(value)
+      : (placeholder || 'Select month');
+
+  const isShowingPlaceholder = !isPresent && !value;
+
   return (
     <div ref={containerRef} className="relative">
       {/* MD3 Outlined Text Field */}
@@ -111,20 +147,30 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
         onClick={() => setOpen(!open)}
         className="w-full h-11 px-3 flex items-center justify-between rounded-xl border text-sm transition-all duration-200 text-left"
         style={{
-          borderColor: open ? 'var(--md3-primary)' : 'var(--md3-outline-variant)',
-          borderWidth: open ? '2px' : '1px',
-          background: 'transparent',
-          color: value ? 'var(--md3-on-surface)' : 'var(--md3-on-surface-variant)',
+          borderColor: isPresent
+            ? 'var(--md3-primary)'
+            : open
+              ? 'var(--md3-primary)'
+              : 'var(--md3-outline-variant)',
+          borderWidth: open || isPresent ? '2px' : '1px',
+          background: isPresent ? 'var(--md3-primary-container)' : 'transparent',
+          color: isPresent
+            ? 'var(--md3-on-primary-container)'
+            : value
+              ? 'var(--md3-on-surface)'
+              : 'var(--md3-on-surface-variant)',
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.5 : 1,
         }}
       >
-        <span className={value ? '' : 'opacity-60'}>
-          {value ? formatDisplay(value) : (placeholder || 'Select month')}
+        <span className={isShowingPlaceholder ? 'opacity-60' : ''}>
+          {displayText}
         </span>
         <Calendar
           className="size-4 flex-shrink-0"
-          style={{ color: 'var(--md3-on-surface-variant)' }}
+          style={{
+            color: isPresent ? 'var(--md3-on-primary-container)' : 'var(--md3-on-surface-variant)',
+          }}
         />
       </button>
 
@@ -138,7 +184,37 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
             minWidth: '260px',
           }}
         >
-          {view === 'month' ? (
+          {/* Present toggle — shown at top when enabled */}
+          {showPresent && (
+            <button
+              type="button"
+              onClick={handlePresentToggle}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-3 transition-all duration-150"
+              style={{
+                background: isPresent ? 'var(--md3-primary)' : 'var(--md3-surface-container-high)',
+                color: isPresent ? 'var(--md3-on-primary)' : 'var(--md3-on-surface)',
+              }}
+            >
+              <span className="text-sm font-medium">Present</span>
+              {/* MD3-style toggle indicator */}
+              <div
+                className="w-10 h-6 rounded-full p-0.5 transition-all duration-200 flex items-center"
+                style={{
+                  background: isPresent ? 'var(--md3-on-primary)' : 'var(--md3-outline)',
+                  justifyContent: isPresent ? 'flex-end' : 'flex-start',
+                }}
+              >
+                <div
+                  className="size-5 rounded-full transition-all duration-200"
+                  style={{
+                    background: isPresent ? 'var(--md3-primary)' : 'var(--md3-surface-container-highest)',
+                  }}
+                />
+              </div>
+            </button>
+          )}
+
+          {!isPresent && view === 'month' ? (
             <>
               {/* Year navigation header — clickable year label */}
               <div className="flex items-center justify-between mb-3">
@@ -210,7 +286,7 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
                 })}
               </div>
             </>
-          ) : (
+          ) : !isPresent && view === 'year' ? (
             <>
               {/* Year selection view */}
               <div className="flex items-center justify-between mb-3">
@@ -277,10 +353,10 @@ export default function MonthPicker({ value, onChange, placeholder, disabled }: 
                 })}
               </div>
             </>
-          )}
+          ) : null}
 
-          {/* Clear button */}
-          {value && view === 'month' && (
+          {/* Clear button — only when not in Present mode and has a value */}
+          {!isPresent && value && view === 'month' && (
             <div className="flex justify-end mt-3 pt-2" style={{ borderTop: '1px solid var(--md3-outline-variant)' }}>
               <button
                 type="button"

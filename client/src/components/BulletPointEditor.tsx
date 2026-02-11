@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, X, List, AlignLeft } from 'lucide-react';
+import { Plus, X, List, AlignLeft, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BulletPointEditorProps {
@@ -26,7 +26,6 @@ function getLengthStatus(len: number): { label: string; color: string; bg: strin
 
 function getProgressPercent(len: number): number {
   if (len === 0) return 0;
-  // Scale: 0→0%, OPTIMAL_MAX→100%, WARNING_MAX+→100%
   return Math.min(100, (len / OPTIMAL_MAX) * 100);
 }
 
@@ -64,6 +63,10 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
   const [bullets, setBullets] = useState<string[]>(() => parseBullets(value));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const justAddedRef = useRef(false);
+
+  // Drag state
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const parsed = parseBullets(value);
@@ -134,6 +137,35 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
     }
   }, [bullets, removeBullet]);
 
+  // Drag handlers
+  const handleDragStart = useCallback((index: number) => {
+    setDragIndex(index);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      setBullets(prev => {
+        const next = [...prev];
+        const [removed] = next.splice(dragIndex, 1);
+        next.splice(dragOverIndex, 0, removed);
+        onChange(serializeBullets(next));
+        return next;
+      });
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
+  }, [dragIndex, dragOverIndex, onChange]);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverIndex(null);
+  }, []);
+
   const switchToText = useCallback(() => {
     setMode('text');
   }, []);
@@ -185,24 +217,55 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
           className="text-base min-h-[120px] resize-none"
         />
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           <AnimatePresence mode="popLayout">
             {bullets.map((bullet, index) => {
               const len = bullet.trim().length;
               const status = getLengthStatus(len);
               const progress = getProgressPercent(len);
               const progressColor = getProgressColor(len);
+              const isDragging = dragIndex === index;
+              const isDragOver = dragOverIndex === index && dragIndex !== index;
 
               return (
                 <motion.div
-                  key={index}
+                  key={`bullet-${index}`}
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.15 }}
                   className="group"
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onDragLeave={handleDragLeave}
+                  style={{
+                    opacity: isDragging ? 0.4 : 1,
+                    transition: 'opacity 0.15s ease',
+                  }}
                 >
-                  <div className="flex items-center gap-1.5">
+                  {/* Drop indicator line */}
+                  {isDragOver && (
+                    <div
+                      className="h-0.5 rounded-full mb-1 transition-all duration-150"
+                      style={{ background: 'var(--md3-primary)', marginLeft: '28px', marginRight: '28px' }}
+                    />
+                  )}
+
+                  <div className="flex items-center gap-1">
+                    {/* Drag handle */}
+                    <div
+                      className="flex-shrink-0 cursor-grab active:cursor-grabbing p-0.5 rounded opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
+                      style={{ color: 'var(--md3-on-surface-variant)' }}
+                      onMouseDown={(e) => {
+                        // Prevent text selection while dragging
+                        e.stopPropagation();
+                      }}
+                    >
+                      <GripVertical className="size-3.5" />
+                    </div>
+
                     {/* Bullet number indicator */}
                     <div
                       className="flex-shrink-0 size-5 rounded-full flex items-center justify-center text-xs font-medium"
@@ -240,7 +303,7 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
 
                   {/* Character count bar — only show when bullet has content */}
                   {len > 0 && (
-                    <div className="flex items-center gap-2 mt-1 ml-6.5 pl-1">
+                    <div className="flex items-center gap-2 mt-1 ml-8 pl-1">
                       {/* Progress bar */}
                       <div
                         className="flex-1 h-1 rounded-full overflow-hidden"
@@ -298,6 +361,8 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
               <kbd className="px-1 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--md3-surface-container-high)' }}>Enter</kbd> new bullet
               {' · '}
               <kbd className="px-1 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--md3-surface-container-high)' }}>Backspace</kbd> remove empty
+              {' · '}
+              <span style={{ color: 'var(--md3-on-surface-variant)' }}>Drag to reorder</span>
             </p>
             <p className="text-xs" style={{ color: 'var(--md3-on-surface-variant)', fontSize: '10px' }}>
               Optimal: {OPTIMAL_MIN}–{OPTIMAL_MAX} chars

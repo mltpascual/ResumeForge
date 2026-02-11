@@ -5,7 +5,6 @@ import BulletPointEditor from '@/components/BulletPointEditor';
 import MonthPicker from '@/components/MonthPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -87,18 +86,10 @@ export default function ExperienceForm() {
                       value={exp.endDate}
                       onChange={(val) => updateExperience(exp.id, 'endDate', val)}
                       placeholder="End month"
-                      disabled={exp.current}
+                      showPresent
+                      isPresent={exp.current}
+                      onPresentChange={(present) => updateExperience(exp.id, 'current', present)}
                     />
-                    <div className="flex items-center gap-2 mt-1">
-                      <Checkbox
-                        id={`current-${exp.id}`}
-                        checked={exp.current}
-                        onCheckedChange={(checked) => updateExperience(exp.id, 'current', !!checked)}
-                      />
-                      <label htmlFor={`current-${exp.id}`} className="text-sm text-muted-foreground cursor-pointer">
-                        Current role
-                      </label>
-                    </div>
                   </div>
                 </div>
 
