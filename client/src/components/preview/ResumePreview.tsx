@@ -271,23 +271,23 @@ export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs,
 
   const mainSections = sectionOrder.filter(s => s !== 'skills' && s !== 'certifications');
   const mainHeadingStyle: React.CSSProperties = {
-    fontFamily: font.heading, fontSize: sz(10, fs), fontWeight: 700,
+    fontFamily: font.heading, fontSize: sz(11, fs), fontWeight: 700,
     textTransform: 'uppercase', letterSpacing: '0.12em', color: accent,
     marginBottom: '10px', paddingBottom: '4px', borderBottom: `2px solid ${accent}`,
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, display: 'flex', minHeight: '100%', lineHeight: 1.5 * ls }}>
-      <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: `${36 * ms}px ${22 * ms}px` }}>
-        <h1 style={{ fontFamily: font.heading, fontSize: sz(22, fs), fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
+    <div style={{ fontFamily: font.body, color: colors.black, display: 'flex', minHeight: '297mm', lineHeight: 1.5 * ls }}>
+      <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: `${36 * ms}px ${22 * ms}px`, minHeight: '297mm' }}>
+        <h1 style={{ fontFamily: font.heading, fontSize: sz(24, fs), fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
           {personalInfo.fullName || 'Your Name'}
         </h1>
         {personalInfo.title && (
-          <p style={{ fontSize: sz(11, fs), color: sidebarMuted, marginBottom: '24px', fontFamily: font.body }}>{personalInfo.title}</p>
+          <p style={{ fontSize: sz(12, fs), color: sidebarMuted, marginBottom: '24px', fontFamily: font.body }}>{personalInfo.title}</p>
         )}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: sz(9, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '10px', fontWeight: 600, fontFamily: font.mono }}>Contact</h3>
-          <div style={{ fontSize: sz(10.5, fs), lineHeight: 1.8, color: sidebarMuted, fontFamily: font.body }}>
+          <h3 style={{ fontSize: sz(10, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '10px', fontWeight: 600, fontFamily: font.mono }}>Contact</h3>
+          <div style={{ fontSize: sz(11.5, fs), lineHeight: 1.8, color: sidebarMuted, fontFamily: font.body }}>
             {personalInfo.email && <p>{personalInfo.email}</p>}
             {personalInfo.phone && <p>{personalInfo.phone}</p>}
             {personalInfo.location && <p>{personalInfo.location}</p>}
@@ -297,17 +297,17 @@ export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs,
         </div>
         {data.skills && data.skills.trim() && (
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontSize: sz(9, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Skills</h3>
-            <p style={{ fontSize: sz(10.5, fs), color: sidebarText, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
+            <h3 style={{ fontSize: sz(10, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Skills</h3>
+            <p style={{ fontSize: sz(11.5, fs), color: sidebarText, lineHeight: 1.7, fontFamily: font.body }}>{data.skills}</p>
           </div>
         )}
         {data.certifications.length > 0 && (
           <div>
-            <h3 style={{ fontSize: sz(9, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Certifications</h3>
+            <h3 style={{ fontSize: sz(10, fs), textTransform: 'uppercase', letterSpacing: '0.15em', color: sidebarSubtle, marginBottom: '12px', fontWeight: 600, fontFamily: font.mono }}>Certifications</h3>
             {data.certifications.map(cert => (
               <div key={cert.id} style={{ marginBottom: '10px' }}>
-                <p style={{ fontSize: sz(10.5, fs), fontWeight: 500, color: sidebarText, fontFamily: font.body }}>{cert.name}</p>
-                <p style={{ fontSize: sz(9.5, fs), color: sidebarSubtle, fontFamily: font.body }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
+                <p style={{ fontSize: sz(11.5, fs), fontWeight: 500, color: sidebarText, fontFamily: font.body }}>{cert.name}</p>
+                <p style={{ fontSize: sz(10.5, fs), color: sidebarSubtle, fontFamily: font.body }}>{cert.issuer}{cert.date ? ` · ${cert.date}` : ''}</p>
               </div>
             ))}
           </div>
@@ -318,7 +318,7 @@ export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs,
         {personalInfo.summary && (
           <div style={{ marginBottom: '22px' }}>
             <h2 style={mainHeadingStyle}>Profile</h2>
-            <p style={{ fontSize: sz(11, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
+            <p style={{ fontSize: sz(12, fs), color: colors.body, lineHeight: 1.7, fontFamily: font.body }}>{personalInfo.summary}</p>
           </div>
         )}
         {mainSections.map(sectionId => {
@@ -331,15 +331,15 @@ export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs,
                   {data.experiences.map(exp => (
                     <div key={exp.id} style={{ marginBottom: '14px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <h3 style={{ fontFamily: font.heading, fontSize: sz(12, fs), fontWeight: 600, color: colors.black }}>{exp.position}</h3>
+                        <h3 style={{ fontFamily: font.heading, fontSize: sz(13, fs), fontWeight: 600, color: colors.black }}>{exp.position}</h3>
                         <span style={{ fontSize: sz(9.5, fs), color: colors.muted, whiteSpace: 'nowrap', fontFamily: font.mono }}>
                           {formatDate(exp.startDate)} — {exp.current ? 'Present' : formatDate(exp.endDate)}
                         </span>
                       </div>
-                      <p style={{ fontSize: sz(10.5, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
+                      <p style={{ fontSize: sz(11.5, fs), color: colors.muted, marginBottom: '3px', fontFamily: font.body }}>
                         {exp.company}{exp.location ? ` · ${exp.location}` : ''}
                       </p>
-                      {exp.description && renderDescription(exp.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
+                      {exp.description && renderDescription(exp.description, { fontSize: sz(11.5, fs), color: colors.body, lineHeight: 1.6 * ls, fontFamily: font.body })}
                     </div>
                   ))}
                 </div>
@@ -352,10 +352,10 @@ export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs,
                   {data.education.map(edu => (
                     <div key={edu.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
-                        <span style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
+                        <h3 style={{ fontFamily: font.heading, fontSize: sz(12.5, fs), fontWeight: 600, color: colors.black }}>{edu.institution}</h3>
+                        <span style={{ fontSize: sz(10.5, fs), color: colors.muted, fontFamily: font.mono }}>{edu.startDate} — {edu.endDate}</span>
                       </div>
-                      <p style={{ fontSize: sz(10.5, fs), color: colors.body, fontFamily: font.body }}>
+                      <p style={{ fontSize: sz(11.5, fs), color: colors.body, fontFamily: font.body }}>
                         {edu.degree}{edu.field ? ` in ${edu.field}` : ''}{edu.gpa ? ` · GPA: ${edu.gpa}` : ''}
                       </p>
                     </div>
@@ -369,9 +369,9 @@ export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs,
                   <h2 style={mainHeadingStyle}>Projects</h2>
                   {data.projects.map(proj => (
                     <div key={proj.id} style={{ marginBottom: '10px', paddingLeft: '12px', borderLeft: `2px solid ${accent}` }}>
-                      <h3 style={{ fontFamily: font.heading, fontSize: sz(11.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
-                      {proj.technologies && <p style={{ fontSize: sz(9.5, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
-                      {proj.description && renderDescription(proj.description, { fontSize: sz(10.5, fs), color: colors.body, lineHeight: 1.5 * ls, fontFamily: font.body })}
+                      <h3 style={{ fontFamily: font.heading, fontSize: sz(12.5, fs), fontWeight: 600, color: colors.black }}>{proj.name}</h3>
+                      {proj.technologies && <p style={{ fontSize: sz(10.5, fs), color: colors.muted, fontFamily: font.mono }}>{proj.technologies}</p>}
+                      {proj.description && renderDescription(proj.description, { fontSize: sz(11.5, fs), color: colors.body, lineHeight: 1.5 * ls, fontFamily: font.body })}
                     </div>
                   ))}
                 </div>

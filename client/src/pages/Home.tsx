@@ -238,7 +238,7 @@ export default function Home() {
                 <Link href="/editor">
                   <div className="group cursor-pointer">
                     <div
-                      className="rounded-2xl overflow-hidden mb-4 md3-elevation-1 hover:md3-elevation-2 transition-shadow duration-300"
+                      className="rounded-2xl overflow-hidden mb-4 md3-elevation-1 template-card will-change-transform"
                       style={{
                         background: 'var(--md3-surface-container)',
                         border: '1px solid var(--md3-outline-variant)',
@@ -246,14 +246,15 @@ export default function Home() {
                     >
                       <MiniResumePreview Component={t.Component} accent={t.accent} />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 transition-transform duration-500 ease-out group-hover:translate-x-1">
                       <span
-                        className="text-xs font-mono-accent px-2 py-0.5 rounded-md"
+                        className="text-xs font-mono-accent px-2 py-0.5 rounded-md transition-colors duration-300"
                         style={{ background: 'var(--md3-surface-container-high)', color: 'var(--md3-on-surface-variant)' }}
                       >
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       <span className="font-display text-lg font-medium">{t.name}</span>
+                      <ArrowRight className="size-4 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" style={{ color: 'var(--md3-primary)' }} />
                     </div>
                   </div>
                 </Link>
