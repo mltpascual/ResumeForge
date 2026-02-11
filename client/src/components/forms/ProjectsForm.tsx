@@ -1,16 +1,21 @@
+/*
+ * DESIGN: Minimalist / Severe — Projects Form
+ * Hairline borders, monospace labels, no color
+ */
+
 import { useResume } from '@/contexts/ResumeContext';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Plus, Trash2, FolderOpen } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const inputClass = "w-full bg-transparent border border-[#E4E4E7] px-3 py-2.5 text-sm text-[#09090B] placeholder:text-[#D4D4D8] focus:outline-none focus:border-[#09090B] transition-colors duration-200";
+const labelClass = "block text-[10px] tracking-[0.1em] uppercase text-[#A1A1AA] mb-1.5";
+const labelStyle: React.CSSProperties = { fontFamily: "'JetBrains Mono', monospace" };
 
 export default function ProjectsForm() {
   const { resumeData, addProject, updateProject, removeProject } = useResume();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <AnimatePresence mode="popLayout">
         {resumeData.projects.map((proj, index) => (
           <motion.div
@@ -18,65 +23,60 @@ export default function ProjectsForm() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="relative bg-secondary/30 border border-border rounded-md p-5 space-y-4"
+            transition={{ duration: 0.2 }}
+            className="border border-[#E4E4E7] p-5 space-y-4"
           >
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <FolderOpen className="w-4 h-4 text-gold" />
-                <span className="text-sm font-medium text-muted-foreground" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic' }}>
-                  Project {index + 1}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] tracking-[0.1em] uppercase text-[#A1A1AA]" style={labelStyle}>
+                Project {String(index + 1).padStart(2, '0')}
+              </span>
+              <button
                 onClick={() => removeProject(proj.id)}
-                className="text-muted-foreground hover:text-destructive h-8 w-8 p-0"
+                className="w-6 h-6 flex items-center justify-center text-[#D4D4D8] hover:text-[#DC2626] transition-colors duration-200"
               >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Project Name</Label>
-                <Input
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass} style={labelStyle}>Name</label>
+                <input
                   value={proj.name}
-                  onChange={(e) => updateProject(proj.id, 'name', e.target.value)}
+                  onChange={e => updateProject(proj.id, 'name', e.target.value)}
                   placeholder="Design System"
-                  className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
+                  className={inputClass}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Link (Optional)</Label>
-                <Input
+              <div>
+                <label className={labelClass} style={labelStyle}>Link</label>
+                <input
                   value={proj.link}
-                  onChange={(e) => updateProject(proj.id, 'link', e.target.value)}
+                  onChange={e => updateProject(proj.id, 'link', e.target.value)}
                   placeholder="https://..."
-                  className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
+                  className={inputClass}
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Technologies</Label>
-              <Input
+            <div>
+              <label className={labelClass} style={labelStyle}>Technologies</label>
+              <input
                 value={proj.technologies}
-                onChange={(e) => updateProject(proj.id, 'technologies', e.target.value)}
+                onChange={e => updateProject(proj.id, 'technologies', e.target.value)}
                 placeholder="React, TypeScript, Figma"
-                className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
+                className={inputClass}
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Description</Label>
-              <Textarea
+            <div>
+              <label className={labelClass} style={labelStyle}>Description</label>
+              <textarea
                 value={proj.description}
-                onChange={(e) => updateProject(proj.id, 'description', e.target.value)}
+                onChange={e => updateProject(proj.id, 'description', e.target.value)}
                 placeholder="Describe the project and your contributions..."
                 rows={2}
-                className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20 resize-none"
+                className={`${inputClass} resize-none`}
               />
             </div>
           </motion.div>
@@ -84,20 +84,21 @@ export default function ProjectsForm() {
       </AnimatePresence>
 
       {resumeData.projects.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          <FolderOpen className="w-8 h-8 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No projects added yet</p>
+        <div className="py-12 text-center">
+          <p className="text-[10px] tracking-[0.1em] uppercase text-[#D4D4D8]" style={labelStyle}>
+            No projects added
+          </p>
         </div>
       )}
 
-      <Button
-        variant="outline"
+      <button
         onClick={addProject}
-        className="w-full border-dashed border-gold/30 text-gold hover:bg-gold/5 hover:border-gold/50"
+        className="w-full border border-dashed border-[#D4D4D8] py-3 text-[10px] tracking-[0.1em] uppercase text-[#A1A1AA] hover:border-[#09090B] hover:text-[#09090B] transition-colors duration-200 flex items-center justify-center gap-2"
+        style={labelStyle}
       >
-        <Plus className="w-4 h-4 mr-2" />
+        <Plus className="w-3.5 h-3.5" />
         Add Project
-      </Button>
+      </button>
     </div>
   );
 }

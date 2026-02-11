@@ -1,7 +1,9 @@
 /*
- * DESIGN: "Black Tie Elegance" — Editor Page
- * Dark surfaces, gold accents, glass panels.
- * Asymmetric two-column: form editor left, live preview right.
+ * DESIGN: Minimalist / Severe — Editor Page
+ * Pure white background, black text, hairline borders
+ * HORIZONTAL TABS across the top for section navigation
+ * Form below tabs on the left, preview on the right
+ * No shadows, no rounded corners, no color
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react';
@@ -9,7 +11,6 @@ import { Link } from 'wouter';
 import { useResume } from '@/contexts/ResumeContext';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import ResumePreview from '@/components/preview/ResumePreview';
 import PersonalInfoForm from '@/components/forms/PersonalInfoForm';
@@ -21,37 +22,30 @@ import CertificationsForm from '@/components/forms/CertificationsForm';
 import { type TemplateId } from '@/types/resume';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Diamond,
-  User,
-  Briefcase,
-  GraduationCap,
-  Zap,
-  FolderOpen,
-  Award,
+  ArrowLeft,
   Download,
-  ChevronLeft,
+  ZoomIn,
+  ZoomOut,
   Layout,
   Sparkles,
   Trash2,
-  ZoomIn,
-  ZoomOut,
   Eye,
   PenLine,
 } from 'lucide-react';
 
 const sections = [
-  { id: 'personal', label: 'Personal', icon: User },
-  { id: 'experience', label: 'Experience', icon: Briefcase },
-  { id: 'education', label: 'Education', icon: GraduationCap },
-  { id: 'skills', label: 'Skills', icon: Zap },
-  { id: 'projects', label: 'Projects', icon: FolderOpen },
-  { id: 'certifications', label: 'Certifications', icon: Award },
+  { id: 'personal', label: 'Personal' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'education', label: 'Education' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'certifications', label: 'Certifications' },
 ];
 
-const templateOptions: { id: TemplateId; name: string; desc: string }[] = [
-  { id: 'classic', name: 'Classic', desc: 'Centered header, serif elegance' },
-  { id: 'modern', name: 'Modern', desc: 'Sidebar layout, contemporary' },
-  { id: 'executive', name: 'Executive', desc: 'Navy header, authoritative' },
+const templateOptions: { id: TemplateId; name: string }[] = [
+  { id: 'classic', name: 'Classic' },
+  { id: 'modern', name: 'Modern' },
+  { id: 'executive', name: 'Executive' },
 ];
 
 export default function Editor() {
@@ -111,10 +105,10 @@ export default function Editor() {
         <!DOCTYPE html>
         <html>
           <head>
-            <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+            <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { background: white; font-family: 'Source Sans 3', 'Inter', sans-serif; }
+              body { background: white; font-family: 'Archivo', sans-serif; }
               .flex { display: flex; }
               .gap-1 { gap: 4px; }
             </style>
@@ -181,68 +175,61 @@ export default function Editor() {
     }
   };
 
-  const currentSection = sections.find(s => s.id === activeSection) || sections[0];
-
   return (
-    <div className="h-screen flex flex-col bg-background" style={{ fontFamily: 'var(--font-body)' }}>
+    <div className="h-screen flex flex-col bg-white text-[#09090B]" style={{ fontFamily: "'Archivo', sans-serif" }}>
       {/* Top Bar */}
-      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-3 md:px-4 shrink-0">
-        <div className="flex items-center gap-2">
+      <header className="h-12 border-b border-[#E4E4E7] flex items-center justify-between px-4 md:px-6 shrink-0">
+        <div className="flex items-center gap-4">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-gold gap-1 px-2 transition-colors duration-300">
-              <ChevronLeft className="w-4 h-4" />
-              <Diamond className="w-4 h-4 text-gold hidden sm:block" />
-              <span className="hidden sm:inline text-warm-white" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: '14px', letterSpacing: '0.03em' }}>ResumeForge</span>
-            </Button>
+            <span className="flex items-center gap-2 text-[#71717A] hover:text-[#09090B] transition-opacity duration-200">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-display text-sm font-bold tracking-tight hidden sm:inline">ResumeForge</span>
+            </span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-1 md:gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
+        <div className="flex items-center gap-1">
+          <button
             onClick={() => {
               loadSampleData();
-              toast.success('Sample data loaded!');
+              toast.success('Sample data loaded');
             }}
-            className="text-muted-foreground hover:text-gold gap-1 text-xs px-2 md:px-3 transition-colors duration-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#71717A] hover:text-[#09090B] transition-opacity duration-200"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Load Sample</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+            <span className="hidden sm:inline font-mono-accent text-[10px] tracking-wider uppercase">Sample</span>
+          </button>
+          <button
             onClick={() => {
               clearAllData();
-              toast.info('All data cleared');
+              toast.info('Data cleared');
             }}
-            className="text-muted-foreground hover:text-destructive gap-1 text-xs px-2 md:px-3 transition-colors duration-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#71717A] hover:text-[#DC2626] transition-opacity duration-200"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Clear</span>
-          </Button>
-          <div className="w-px h-6 bg-border mx-0.5 hidden sm:block" />
-          <Button
-            variant="ghost"
-            size="sm"
+            <span className="hidden sm:inline font-mono-accent text-[10px] tracking-wider uppercase">Clear</span>
+          </button>
+          <div className="w-px h-5 bg-[#E4E4E7] mx-1 hidden sm:block" />
+          <button
             onClick={() => setShowTemplates(!showTemplates)}
-            className="text-muted-foreground hover:text-gold gap-1 text-xs px-2 md:px-3 transition-colors duration-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#71717A] hover:text-[#09090B] transition-opacity duration-200"
           >
             <Layout className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Template: {templateOptions.find(t => t.id === selectedTemplate)?.name}</span>
-            <span className="md:hidden">{templateOptions.find(t => t.id === selectedTemplate)?.name}</span>
-          </Button>
-          <div className="w-px h-6 bg-border mx-0.5 hidden sm:block" />
-          <Button
-            size="sm"
+            <span className="font-mono-accent text-[10px] tracking-wider uppercase">
+              {templateOptions.find(t => t.id === selectedTemplate)?.name}
+            </span>
+          </button>
+          <div className="w-px h-5 bg-[#E4E4E7] mx-1 hidden sm:block" />
+          <button
             onClick={handleExportPDF}
             disabled={isExporting}
-            className="btn-gold border-0 gap-1 px-3 font-medium"
+            className="flex items-center gap-1.5 bg-[#09090B] text-white px-4 py-1.5 text-xs hover:opacity-70 transition-opacity duration-200 disabled:opacity-40"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
-          </Button>
+            <span className="font-mono-accent text-[10px] tracking-wider uppercase">
+              {isExporting ? 'Exporting...' : 'Export PDF'}
+            </span>
+          </button>
         </div>
       </header>
 
@@ -253,25 +240,25 @@ export default function Editor() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="border-b border-border bg-card overflow-hidden"
+            transition={{ duration: 0.2 }}
+            className="border-b border-[#E4E4E7] overflow-hidden"
           >
-            <div className="p-3 md:p-4 flex gap-3 md:gap-4 justify-center flex-wrap">
-              {templateOptions.map(tmpl => (
+            <div className="px-6 py-3 flex gap-0">
+              {templateOptions.map((tmpl, i) => (
                 <button
                   key={tmpl.id}
                   onClick={() => {
                     setSelectedTemplate(tmpl.id);
                     setShowTemplates(false);
                   }}
-                  className={`px-4 md:px-5 py-2.5 md:py-3 rounded-md border transition-all duration-300 text-left ${
+                  className={`px-5 py-2 text-xs transition-opacity duration-200 border-b-2 ${
                     selectedTemplate === tmpl.id
-                      ? 'border-gold/50 bg-gold-muted'
-                      : 'border-border hover:border-gold/30 bg-secondary/30'
+                      ? 'border-[#09090B] text-[#09090B] font-medium'
+                      : 'border-transparent text-[#71717A] hover:text-[#09090B]'
                   }`}
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}
                 >
-                  <p className="text-sm font-medium text-warm-white" style={{ fontFamily: 'var(--font-display)' }}>{tmpl.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5" style={{ fontWeight: 300 }}>{tmpl.desc}</p>
+                  {tmpl.name}
                 </button>
               ))}
             </div>
@@ -279,102 +266,73 @@ export default function Editor() {
         )}
       </AnimatePresence>
 
+      {/* HORIZONTAL SECTION TABS */}
+      <div className="border-b border-[#E4E4E7] shrink-0 overflow-x-auto">
+        <div className="flex px-4 md:px-6">
+          {sections.map((section, i) => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`relative px-4 md:px-5 py-3 text-xs transition-colors duration-200 whitespace-nowrap ${
+                activeSection === section.id
+                  ? 'text-[#09090B]'
+                  : 'text-[#A1A1AA] hover:text-[#71717A]'
+              }`}
+              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}
+            >
+              <span className="mr-2 text-[#D4D4D8]">{String(i + 1).padStart(2, '0')}</span>
+              {section.label}
+              {activeSection === section.id && (
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-px bg-[#09090B]"
+                  layoutId="activeTab"
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Mobile View Toggle */}
-      <div className="lg:hidden flex border-b border-border bg-card shrink-0">
+      <div className="lg:hidden flex border-b border-[#E4E4E7] shrink-0">
         <button
           onClick={() => setMobileView('form')}
-          className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-300 ${
-            mobileView === 'form' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground'
+          className={`flex-1 py-2 text-xs flex items-center justify-center gap-2 transition-colors duration-200 ${
+            mobileView === 'form' ? 'text-[#09090B] border-b border-[#09090B]' : 'text-[#A1A1AA]'
           }`}
+          style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}
         >
-          <PenLine className="w-4 h-4" />
+          <PenLine className="w-3.5 h-3.5" />
           Editor
         </button>
         <button
           onClick={() => setMobileView('preview')}
-          className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-300 ${
-            mobileView === 'preview' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground'
+          className={`flex-1 py-2 text-xs flex items-center justify-center gap-2 transition-colors duration-200 ${
+            mobileView === 'preview' ? 'text-[#09090B] border-b border-[#09090B]' : 'text-[#A1A1AA]'
           }`}
+          style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}
         >
-          <Eye className="w-4 h-4" />
+          <Eye className="w-3.5 h-3.5" />
           Preview
         </button>
       </div>
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Section Navigation Rail - Desktop only */}
-        <div className="w-16 border-r border-border bg-[oklch(0.14_0.005_285)] hidden lg:flex flex-col items-center py-4 gap-1 shrink-0">
-          {sections.map(section => (
-            <Tooltip key={section.id} delayDuration={300}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-10 h-10 rounded-md flex items-center justify-center transition-all duration-300 ${
-                    activeSection === section.id
-                      ? 'bg-gold-muted text-gold border border-gold/20'
-                      : 'text-muted-foreground hover:text-gold hover:bg-gold-muted/50'
-                  }`}
-                >
-                  <section.icon className="w-[18px] h-[18px]" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="text-xs bg-card border-border">
-                {section.label}
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </div>
-
         {/* Form Panel */}
-        <div className={`lg:w-[420px] border-r border-border bg-[oklch(0.15_0.005_285)] flex flex-col shrink-0 ${
-          mobileView === 'form' ? 'flex w-full lg:w-[420px]' : 'hidden lg:flex'
+        <div className={`lg:w-[480px] border-r border-[#E4E4E7] flex flex-col shrink-0 ${
+          mobileView === 'form' ? 'flex w-full lg:w-[480px]' : 'hidden lg:flex'
         }`}>
-          {/* Section tabs - Mobile horizontal scroll */}
-          <div className="lg:hidden overflow-x-auto border-b border-border">
-            <div className="flex px-3 py-2 gap-1">
-              {sections.map(section => (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors duration-300 ${
-                    activeSection === section.id
-                      ? 'bg-gold-muted text-gold'
-                      : 'text-muted-foreground hover:text-gold hover:bg-gold-muted/50'
-                  }`}
-                >
-                  <section.icon className="w-3.5 h-3.5" />
-                  {section.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="px-5 py-4 border-b border-border">
-            <div className="flex items-center gap-2">
-              <currentSection.icon className="w-4 h-4 text-gold" />
-              <h2 className="text-lg text-warm-white" style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}>
-                {currentSection.label}
-              </h2>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1" style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 300 }}>
-              {activeSection === 'personal' && 'Your contact information and professional summary'}
-              {activeSection === 'experience' && 'Your work history and professional achievements'}
-              {activeSection === 'education' && 'Your academic background and qualifications'}
-              {activeSection === 'skills' && 'Your technical and professional competencies'}
-              {activeSection === 'projects' && 'Notable projects and contributions'}
-              {activeSection === 'certifications' && 'Professional certifications and credentials'}
-            </p>
-          </div>
           <ScrollArea className="flex-1">
-            <div className="p-5">
+            <div className="p-6 md:p-8">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeSection}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.25 }}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
                 >
                   {renderForm()}
                 </motion.div>
@@ -385,36 +343,30 @@ export default function Editor() {
 
         {/* Preview Panel */}
         <div
-          className={`flex-1 bg-[oklch(0.11_0.005_285)] flex flex-col overflow-hidden ${
+          className={`flex-1 bg-[#FAFAFA] flex flex-col overflow-hidden ${
             mobileView === 'preview' ? 'flex' : 'hidden lg:flex'
           }`}
           ref={previewContainerRef}
         >
           {/* Preview Controls */}
-          <div className="h-10 flex items-center justify-between px-4 bg-[oklch(0.11_0.005_285)] border-b border-border/50 shrink-0">
-            <span className="text-xs text-gold/60 tracking-wide" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 300 }}>
-              Live Preview
-            </span>
+          <div className="h-9 flex items-center justify-between px-4 border-b border-[#E4E4E7] shrink-0">
+            <span className="text-label text-[#A1A1AA]">Preview</span>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setPreviewScale(s => Math.max(s - 0.1, 0.3))}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-gold transition-colors duration-300"
+                className="w-7 h-7 flex items-center justify-center text-[#A1A1AA] hover:text-[#09090B] transition-opacity duration-200"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
-              </Button>
-              <span className="text-xs text-muted-foreground w-12 text-center">
+              </button>
+              <span className="text-[10px] text-[#A1A1AA] w-10 text-center font-mono-accent">
                 {Math.round(previewScale * 100)}%
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setPreviewScale(s => Math.min(s + 0.1, 1))}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-gold transition-colors duration-300"
+                className="w-7 h-7 flex items-center justify-center text-[#A1A1AA] hover:text-[#09090B] transition-opacity duration-200"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
-              </Button>
+              </button>
             </div>
           </div>
 

@@ -1,356 +1,299 @@
 /*
- * DESIGN: "Black Tie Elegance" — Luxury Landing Page
- * Deep dark surfaces, champagne gold accents, Cormorant Garamond display.
- * Cinematic hero with moody lighting. Generous negative space.
+ * DESIGN: Minimalist / Severe
+ * - Pure black on white, no color
+ * - Oversized Space Grotesk headings
+ * - Hairline borders as structure
+ * - Numbered sections (01, 02, 03)
+ * - JetBrains Mono for labels
+ * - Deliberate emptiness / negative space
  */
 
-import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { FileText, Sparkles, Download, Layout, ArrowRight, PenLine, Eye, Diamond } from "lucide-react";
+import { ArrowRight, Minus } from "lucide-react";
 
-const HERO_BG = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/ATjBPas4e19uKtwzDCMHdA-img-1_1770770710000_na1fn_bHV4dXJ5LWhlcm8.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0FUakJQYXM0ZTE5dUt0d3pEQ01IZEEtaW1nLTFfMTc3MDc3MDcxMDAwMF9uYTFmbl9iSFY0ZFhKNUxXaGxjbTguanBnP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=nJ-bPNEigvLqWqtjl~3PRuTg8S0~E9i2AcfyerCdUplRFnqmmQ00n0OjhEgUuw10RbfMHYixkHVQqE2gk6E4YP~L5svZOCZUhJLsmUguFVunvM3crW2MOhHeZk4qf6SxT5M7nf8XqhuGW3zYZXkM4rTVmS7ij8AkeMZOAaRJgYRlxlqOYI8UTfatjOMzrVgU-gwJasoc-rZ9-TJ-b~FVG0dHnHGQZw8NEWKf33~ZRYBO3RxWWsPnpyPVokg~CbrTulSAWej1veJol61WRbcXZR5dNWq91h0ey7lpmeSry2TUxkgaW1sHMftTMovuITtFgwBpWnf0QJDYCdhWMdyExQ__";
+const HERO_IMAGE = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/E3e72YchZqpeCDdxOT6OO0-img-1_1770772003000_na1fn_bWluaW1hbC1oZXJv.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0UzZTcyWWNoWnFwZUNEZHhPVDZPTzAtaW1nLTFfMTc3MDc3MjAwMzAwMF9uYTFmbl9iV2x1YVcxaGJDMW9aWEp2LmpwZz94LW9zcy1wcm9jZXNzPWltYWdlL3Jlc2l6ZSx3XzE5MjAsaF8xOTIwL2Zvcm1hdCx3ZWJwL3F1YWxpdHkscV84MCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5ODc2MTYwMH19fV19&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=QPdvUtpnctFjUTYZkzQGjIvZUYs0I6q67CI6x7GLiJ7PtLnaxRLCIRwHbYtHz3CvE6UKBe5ZBudN0zAGYg8bTHrEJeYk1Q0nYOg5I09wMcS58Nw9VzsQyFBIqPiG7etbVLbUh~t7TBjuPQkgTJJtR-4Xaa7XCzLjKYqOtGvzkt~fGi4irS0Sw33Z2VL3Br6fQeDfOh8F5aMJS0Rm53oml-cMflhTlI3nxAjzGgjFzKIwVnHQS49fPgkC9aN1lA1ofneUhzu5Tp7g4JI7iQoYrsn774iJ3tD6CZrT0JW9~Kpts60PdrgjLmvJn~1lXPpin~DZXaazraMuaVu6ORUzKg__";
 
-const TEMPLATE_CLASSIC = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/ATjBPas4e19uKtwzDCMHdA-img-2_1770770715000_na1fn_bHV4dXJ5LWNsYXNzaWM.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0FUakJQYXM0ZTE5dUt0d3pEQ01IZEEtaW1nLTJfMTc3MDc3MDcxNTAwMF9uYTFmbl9iSFY0ZFhKNUxXTnNZWE56YVdNLmpwZz94LW9zcy1wcm9jZXNzPWltYWdlL3Jlc2l6ZSx3XzE5MjAsaF8xOTIwL2Zvcm1hdCx3ZWJwL3F1YWxpdHkscV84MCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5ODc2MTYwMH19fV19&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=EdsV0d2q6JhKLWlJ5IBaPIUZvim1F7iq~-O53AkZMPwzcnFza3nkmbFhrXNfXR6u5zhIFtNWpVGvpmoVLooLUe0GuvH9uNWtUR4o-WjjefIeK565POcOocCA~WbUQsLUChtw2jyg03-VQlzlKoTJ7fSflHsJjyDa7uvzILGrTY0ZP8aOUImFgRLnLDSKZNuIkuLsmCuot~qc5E2bVWKY4~7pSjejf4SVYxjoVbOkuW-CD9eZ38blgbCz74j4dZ6sQQLNuRsJhYJKsiataioXm5--USUkqpPsQYAX8-yquCXdK4PYytBexFPyFA~hZUgQ4jjFPXrMVuaB4lxn7MmO7g__";
-const TEMPLATE_MODERN = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/ATjBPas4e19uKtwzDCMHdA-img-3_1770770699000_na1fn_bHV4dXJ5LW1vZGVybg.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0FUakJQYXM0ZTE5dUt0d3pEQ01IZEEtaW1nLTNfMTc3MDc3MDY5OTAwMF9uYTFmbl9iSFY0ZFhKNUxXMXZaR1Z5YmcuanBnP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=Pvdasv42LEp2A40kX6RlPHyBuWPtkSSIv78Q4bQBMqQsdJIWRHI~vIFJqi1MKJFl3XpJ1wMZxaw3B8HmSDzUEcU45eg6orc~UT5t8SkoRRcrNPH0ME7lPSW3z8eGJQ2nUmtV5L9rzYPGfbKvUQ9cYMIPV3T9NIT6uz73D5VpiiJI-x9g90wzV~EWm5Ho6DvuflAmPwou~VkMKZXgQ~JCjp06utB8pKI4kXthk3zRJ91I7Ra-JrGEyUtR2ML42xrXfM7R0qKOVlqsxDQ16HnIFaZSf7qU0WKkho1zzcxgycus3T2l7FvZYiMpj2jMFKhbB4eiunEnh15~w5yoQANobA__";
-const TEMPLATE_EXECUTIVE = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/ATjBPas4e19uKtwzDCMHdA-img-4_1770770705000_na1fn_bHV4dXJ5LWV4ZWN1dGl2ZQ.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0FUakJQYXM0ZTE5dUt0d3pEQ01IZEEtaW1nLTRfMTc3MDc3MDcwNTAwMF9uYTFmbl9iSFY0ZFhKNUxXVjRaV04xZEdsMlpRLmpwZz94LW9zcy1wcm9jZXNzPWltYWdlL3Jlc2l6ZSx3XzE5MjAsaF8xOTIwL2Zvcm1hdCx3ZWJwL3F1YWxpdHkscV84MCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5ODc2MTYwMH19fV19&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=pXA~3yHgMtCDJZJXFtoSDwvOZ12-HbVckMyCTPUXUxzg5qRUXHG6syY2PTXAZ~ab0nrHScVoSTTwIRclCzY9QkfZpub3ygPwbLpoFPrZZbL4bMt2w2FZjWS292a1bsQcvn6Sn2m7bayd5fE0kP28LR8ZnMJhqGVu7Nfnmr1NZTCDXtSnO4RZhnFvs0uSQfxMiZbhpfW0fQ1PKp4hfg200PJl~zYUrMgzdQ68QxUlv7S7VTDipG4KWjrxVpf-BcaK9T~~plR6r1SyE1rWYbDrFPBbSpO~eHwBQb1FcsScvMX3X~RBbq5N0aBcUIAeFP-wO83uikfT0tZlUyZyNxQ7xg__";
+const TEMPLATE_1 = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/E3e72YchZqpeCDdxOT6OO0-img-2_1770772007000_na1fn_bWluaW1hbC10ZW1wbGF0ZS0x.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0UzZTcyWWNoWnFwZUNEZHhPVDZPTzAtaW1nLTJfMTc3MDc3MjAwNzAwMF9uYTFmbl9iV2x1YVcxaGJDMTBaVzF3YkdGMFpTMHguanBnP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=RVC~lW7XbIqipPlfJ377emobVKwR-YmUJ8zOG2RyGUOtQYMdjD1h6097ZNT7UQbH6wDmETxLrSeYI-GvKskv~h~FY7MVEPO8RxUscYPftzdMcBckS0ODZ0yVV2IDh5O4ZKf7REqWiETTVS6reN5Hrt~hCMKyWI5rfAjbzeMwbgc9ZQWB82Edn~Noo6mkYohiuYfCYPXXWp5h3L83cyN~V2D1qzgeiW8TYg-z2BKLcwFwOZFHpQ5Ws85BMNSvwoelXPanLPz2CZFa4WZ5gvmJMxn5CwQfESiFWQbeo5GaN28zXFM-hvivvUr3~nfmf807jpRD-kV2qkgj5gc4GC0zfQ__";
+
+const TEMPLATE_2 = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/E3e72YchZqpeCDdxOT6OO0-img-3_1770772007000_na1fn_bWluaW1hbC10ZW1wbGF0ZS0y.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0UzZTcyWWNoWnFwZUNEZHhPVDZPTzAtaW1nLTNfMTc3MDc3MjAwNzAwMF9uYTFmbl9iV2x1YVcxaGJDMTBaVzF3YkdGMFpTMHkuanBnP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=sVAwPbHgWgJwbdGDnsiCCUlboY6r01-T20PW0TP-wzTCVZI1n0WzRyYIJJsRlT1BD9njsM5Adrjh42tIQpGCAiE9Q5YOe29tmW5~oWhWN~TciKXLsKU-7q3FfqsdIez3ROyWAIYFb2w~ZFwhtU6EkPuJyXzUUSvTDU5VPsSVO98twz~mMaK17NoWgYAF6RUHLz1kAQC-rKTJDYRhM0C1nH3VXez0f~oZmCm782JN19Gaxw4B1Kk9wcUWoMpTnCpn94pvfGAE50qoC4zgjRziV8bjAd344~MTciSG4rJpb7Vs3WQU0iypDpaVBv-B3PFJEahRqtxbp2Ib4Vbxxrj6Lw__";
+
+const TEMPLATE_3 = "https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/E3e72YchZqpeCDdxOT6OO0-img-4_1770772011000_na1fn_bWluaW1hbC10ZW1wbGF0ZS0z.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0UzZTcyWWNoWnFwZUNEZHhPVDZPTzAtaW1nLTRfMTc3MDc3MjAxMTAwMF9uYTFmbl9iV2x1YVcxaGJDMTBaVzF3YkdGMFpTMHouanBnP3gtb3NzLXByb2Nlc3M9aW1hZ2UvcmVzaXplLHdfMTkyMCxoXzE5MjAvZm9ybWF0LHdlYnAvcXVhbGl0eSxxXzgwIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=vWKWYaDO3KssdVDGhyREtdSqUJMWxBFw3Fow6QkQkEh9Dkmu7Q5-aJ~Z2yvc2Buq4lunbX1C-5tgDLQYOJuiNVdAI5I7Yb9wCmKQ8LcdfTpP32KRvcuCv4B58mo77wD9N5bSu-~rOusAFqhKCNDg27NCTx9Z~JwzRHRICDPRRyo~fWjVwh7PwaZsqst5k2xtNQx3W5o4EpRO1sf6UuqUXL4iROvzowaI27VGiC7AU3T8nF9gGjfVzB~rzRwWZ89okE-Bc1NULWg1h64cUCQLQ2LQcJ3iRVTQXfrB6l4AP~woazwP3vuB-ckKpZdMkIhBDX-PW3GWQsbxFTAado-ciw__";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 8 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.15, duration: 0.6, ease: "easeOut" as const },
+    transition: { duration: 0.5, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] },
   }),
 };
 
 const features = [
   {
-    icon: PenLine,
+    num: "01",
     title: "Guided Editor",
-    description: "A structured form walks you through each section — personal details, experience, education, skills, projects, and certifications.",
+    desc: "Structured form fields for every resume section. No blank-page anxiety.",
   },
   {
-    icon: Eye,
+    num: "02",
     title: "Live Preview",
-    description: "See your resume take shape in real-time as you type. Every keystroke is reflected instantly in the preview.",
+    desc: "See changes instantly as you type. What you see is what you export.",
   },
   {
-    icon: Layout,
+    num: "03",
     title: "Three Templates",
-    description: "Choose from Classic, Modern, or Executive — each professionally designed for different industries and roles.",
+    desc: "Classic, Modern, and Executive layouts. Each designed for clarity.",
   },
   {
-    icon: Download,
+    num: "04",
     title: "PDF Export",
-    description: "Download your finished resume as a clean, print-ready PDF with a single click. No watermarks, no limits.",
+    desc: "One-click download. Print-ready, ATS-friendly, pixel-perfect.",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: 'var(--font-body)' }}>
+    <div className="min-h-screen bg-white text-[#09090B]">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-gold/10">
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2.5">
-            <Diamond className="w-5 h-5 text-gold" />
-            <span className="text-lg tracking-wide text-warm-white" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, letterSpacing: '0.05em' }}>
-              ResumeForge
-            </span>
-          </div>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#E4E4E7]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
+          <span className="font-display text-sm font-bold tracking-tight">
+            ResumeForge
+          </span>
           <Link href="/editor">
-            <Button
-              className="btn-gold border-0 px-6 font-medium"
-              size="sm"
-            >
-              Start Building
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+            <span className="text-label text-[#71717A] hover:text-[#09090B] transition-colors duration-200">
+              Open Editor
+            </span>
           </Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Background Image with dark overlay */}
-        <div className="absolute inset-0">
-          <img
-            src={HERO_BG}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.08_0.005_285/0.95)] via-[oklch(0.08_0.005_285/0.85)] to-[oklch(0.08_0.005_285/0.6)]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.13_0.005_285)] via-transparent to-[oklch(0.13_0.005_285/0.3)]" />
-        </div>
-
-        <div className="container relative z-10 pt-20">
-          <div className="max-w-2xl">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              custom={0}
-              variants={fadeUp}
-              className="flex items-center gap-3 mb-8"
-            >
-              <div className="gold-line w-12" />
-              <p
-                className="text-gold text-xs tracking-[0.3em] uppercase"
-                style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}
+      {/* Hero */}
+      <section className="pt-14">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="grid lg:grid-cols-2 gap-0 min-h-[calc(100vh-3.5rem)]">
+            {/* Left — Text */}
+            <div className="flex flex-col justify-center py-20 lg:py-32 lg:pr-16">
+              <motion.p
+                className="text-label text-[#71717A] mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6 }}
               >
-                Resume Atelier
-              </p>
-            </motion.div>
+                Resume Builder
+              </motion.p>
 
-            <motion.h1
-              initial="hidden"
-              animate="visible"
-              custom={1}
-              variants={fadeUp}
-              className="text-5xl md:text-6xl lg:text-7xl leading-[1.05] mb-8 text-warm-white"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-            >
-              Craft resumes
-              <br />
-              that command
-              <br />
-              <span className="text-gold italic" style={{ fontWeight: 300 }}>
-                attention
-              </span>
-            </motion.h1>
+              <motion.h1
+                className="text-display-xl mb-8"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
+              >
+                Build
+                <br />
+                resumes
+                <br />
+                that work.
+              </motion.h1>
 
-            <motion.p
-              initial="hidden"
-              animate="visible"
-              custom={2}
-              variants={fadeUp}
-              className="text-lg md:text-xl text-silver leading-relaxed mb-12 max-w-lg"
-              style={{ fontFamily: 'var(--font-body)', fontWeight: 300 }}
-            >
-              Build a beautifully typeset resume with our guided editor. Choose from elegant templates, preview in real-time, and export as PDF.
-            </motion.p>
+              <motion.div
+                className="w-16 h-px bg-[#09090B] mb-8"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }}
+                style={{ transformOrigin: "left" }}
+              />
 
+              <motion.p
+                className="text-[#71717A] text-lg leading-relaxed max-w-md mb-12 font-body"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                A focused tool for creating clean, professional resumes.
+                Fill in your details, choose a template, export as PDF.
+                Nothing more.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <Link href="/editor">
+                  <span className="inline-flex items-center gap-3 bg-[#09090B] text-white px-8 py-4 font-display text-sm font-medium tracking-tight hover:opacity-70 transition-opacity duration-200">
+                    Start Building
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                </Link>
+                <p className="text-label text-[#A1A1AA] mt-4">
+                  No account required
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Right — Image */}
             <motion.div
-              initial="hidden"
-              animate="visible"
-              custom={3}
-              variants={fadeUp}
-              className="flex flex-col sm:flex-row gap-4 items-start"
+              className="hidden lg:flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
             >
-              <Link href="/editor">
-                <Button
-                  size="lg"
-                  className="btn-gold border-0 px-10 py-6 text-base font-medium tracking-wide"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Begin Crafting
-                </Button>
-              </Link>
-              <p className="text-silver/50 text-sm mt-3 sm:mt-4" style={{ fontWeight: 300 }}>
-                No sign-up required
-              </p>
+              <div className="w-full h-[80vh] relative">
+                <img
+                  src={HERO_IMAGE}
+                  alt="Minimalist resume design"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </motion.div>
           </div>
         </div>
-
-        {/* Decorative gold line at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 gold-line" />
       </section>
 
-      {/* Features Section */}
-      <section className="py-32 bg-background relative noise-overlay">
-        <div className="container relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="mb-20"
-          >
-            <motion.div custom={0} variants={fadeUp} className="flex items-center gap-3 mb-4">
-              <div className="gold-line w-8" />
-              <p
-                className="text-gold text-xs tracking-[0.3em] uppercase"
-                style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}
-              >
-                Features
-              </p>
-            </motion.div>
-            <motion.h2
-              custom={1}
-              variants={fadeUp}
-              className="text-3xl md:text-5xl text-warm-white max-w-lg"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-            >
-              Everything you need,
-              <br />
-              <span className="text-gold/80 italic" style={{ fontWeight: 300 }}>nothing you don't</span>
-            </motion.h2>
-          </motion.div>
+      {/* Divider */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="h-px bg-[#E4E4E7]" />
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border/30 rounded-lg overflow-hidden">
-            {features.map((feature, i) => (
+      {/* Features */}
+      <section className="py-24 lg:py-32">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="grid lg:grid-cols-[1fr_2fr] gap-16 lg:gap-24">
+            {/* Left label */}
+            <div>
+              <p className="text-label text-[#71717A] mb-4">Features</p>
+              <h2 className="text-display-lg">
+                Everything
+                <br />
+                you need.
+              </h2>
+            </div>
+
+            {/* Right — feature list */}
+            <div className="space-y-0">
+              {features.map((f, i) => (
+                <motion.div
+                  key={f.num}
+                  className="border-t border-[#E4E4E7] py-8 grid grid-cols-[auto_1fr] gap-8 items-start"
+                  custom={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-50px" }}
+                  variants={fadeUp}
+                >
+                  <span className="text-label text-[#A1A1AA] pt-1">{f.num}</span>
+                  <div>
+                    <h3 className="font-display text-xl font-bold tracking-tight mb-2">
+                      {f.title}
+                    </h3>
+                    <p className="text-[#71717A] leading-relaxed font-body max-w-md">
+                      {f.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+              <div className="border-t border-[#E4E4E7]" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="h-px bg-[#E4E4E7]" />
+      </div>
+
+      {/* Templates Showcase */}
+      <section className="py-24 lg:py-32">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="mb-16">
+            <p className="text-label text-[#71717A] mb-4">Templates</p>
+            <h2 className="text-display-lg">
+              Three layouts.
+              <br />
+              Zero noise.
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { img: TEMPLATE_1, name: "Classic", num: "01" },
+              { img: TEMPLATE_2, name: "Modern", num: "02" },
+              { img: TEMPLATE_3, name: "Executive", num: "03" },
+            ].map((t, i) => (
               <motion.div
-                key={feature.title}
+                key={t.name}
+                custom={i}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-50px" }}
-                custom={i}
                 variants={fadeUp}
-                className="group bg-card p-10 hover:bg-[oklch(0.19_0.005_285)] transition-colors duration-500"
               >
-                <div className="mb-6 w-12 h-12 rounded-lg border border-gold/20 flex items-center justify-center group-hover:border-gold/40 group-hover:bg-gold-muted transition-all duration-500">
-                  <feature.icon className="w-5 h-5 text-gold" />
+                <div className="aspect-[3/4] bg-[#FAFAFA] border border-[#E4E4E7] overflow-hidden mb-4 group">
+                  <img
+                    src={t.img}
+                    alt={`${t.name} template`}
+                    className="w-full h-full object-cover group-hover:opacity-80 transition-opacity duration-200"
+                  />
                 </div>
-                <h3
-                  className="text-xl mb-3 text-warm-white"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
-                >
-                  {feature.title}
-                </h3>
-                <p className="text-silver text-[0.938rem] leading-relaxed" style={{ fontFamily: 'var(--font-body)', fontWeight: 300 }}>
-                  {feature.description}
-                </p>
+                <div className="flex items-center gap-3">
+                  <span className="text-label text-[#A1A1AA]">{t.num}</span>
+                  <span className="font-display text-sm font-medium tracking-tight">
+                    {t.name}
+                  </span>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Gold divider */}
-      <div className="gold-line" />
+      {/* Divider */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="h-px bg-[#E4E4E7]" />
+      </div>
 
-      {/* Templates Showcase */}
-      <section className="py-32 bg-[oklch(0.11_0.005_285)] relative">
-        <div className="container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="mb-20 text-center"
-          >
-            <motion.div custom={0} variants={fadeUp} className="flex items-center justify-center gap-3 mb-4">
-              <div className="gold-line w-8" />
-              <p
-                className="text-gold text-xs tracking-[0.3em] uppercase"
-                style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}
-              >
-                Templates
+      {/* CTA */}
+      <section className="py-24 lg:py-32">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-label text-[#71717A] mb-4">Get Started</p>
+              <h2 className="text-display-lg mb-6">
+                Your resume,
+                <br />
+                simplified.
+              </h2>
+              <p className="text-[#71717A] leading-relaxed font-body max-w-md">
+                No sign-up. No templates behind paywalls. Just open the editor,
+                fill in your information, and download your resume as a
+                professionally formatted PDF.
               </p>
-              <div className="gold-line w-8" />
-            </motion.div>
-            <motion.h2
-              custom={1}
-              variants={fadeUp}
-              className="text-3xl md:text-5xl text-warm-white"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-            >
-              Three designs, one goal:
-              <br />
-              <span className="text-gold/80 italic" style={{ fontWeight: 300 }}>your best first impression</span>
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            {[
-              { img: TEMPLATE_CLASSIC, name: "Classic", desc: "Timeless serif elegance with refined spacing" },
-              { img: TEMPLATE_MODERN, name: "Modern", desc: "Clean sidebar layout with contemporary styling" },
-              { img: TEMPLATE_EXECUTIVE, name: "Executive", desc: "Authoritative navy design for senior professionals" },
-            ].map((tmpl, i) => (
-              <motion.div
-                key={tmpl.name}
-                custom={i}
-                variants={fadeUp}
-                className="group relative"
-              >
-                <div className="relative overflow-hidden rounded-lg border border-border/50 group-hover:border-gold/30 transition-all duration-500">
-                  <img
-                    src={tmpl.img}
-                    alt={`${tmpl.name} template preview`}
-                    className="w-full h-[420px] object-cover object-top group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h3 className="text-warm-white text-xl mb-1" style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}>
-                      {tmpl.name}
-                    </h3>
-                    <p className="text-silver/70 text-sm" style={{ fontFamily: 'var(--font-body)', fontWeight: 300 }}>
-                      {tmpl.desc}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Gold divider */}
-      <div className="gold-line" />
-
-      {/* CTA Section */}
-      <section className="py-32 bg-background relative noise-overlay overflow-hidden">
-        {/* Decorative radial glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gold/5 blur-[120px] pointer-events-none" />
-
-        <div className="container relative z-10 text-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            <motion.div custom={0} variants={fadeUp} className="flex items-center justify-center gap-3 mb-6">
-              <div className="gold-line w-12" />
-              <Diamond className="w-4 h-4 text-gold" />
-              <div className="gold-line w-12" />
-            </motion.div>
-            <motion.h2
-              custom={1}
-              variants={fadeUp}
-              className="text-3xl md:text-5xl text-warm-white mb-6"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-            >
-              Ready to craft your resume?
-            </motion.h2>
-            <motion.p
-              custom={2}
-              variants={fadeUp}
-              className="text-silver/60 text-lg mb-12 max-w-md mx-auto"
-              style={{ fontFamily: 'var(--font-body)', fontWeight: 300 }}
-            >
-              No sign-up required. Start building, preview instantly, and download your PDF.
-            </motion.p>
-            <motion.div custom={3} variants={fadeUp}>
+            </div>
+            <div className="lg:text-right">
               <Link href="/editor">
-                <Button
-                  size="lg"
-                  className="btn-gold border-0 px-12 py-6 text-base font-medium tracking-wide"
-                >
-                  Get Started Now
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                <span className="inline-flex items-center gap-3 bg-[#09090B] text-white px-10 py-5 font-display text-sm font-medium tracking-tight hover:opacity-70 transition-opacity duration-200">
+                  Open Editor
+                  <ArrowRight className="w-4 h-4" />
+                </span>
               </Link>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-[oklch(0.10_0.005_285)] border-t border-border/30">
-        <div className="container flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Diamond className="w-3.5 h-3.5 text-gold/60" />
-            <span className="text-silver/40 text-sm" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '0.05em' }}>
-              ResumeForge
-            </span>
+      <footer className="border-t border-[#E4E4E7]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8 flex items-center justify-between">
+          <span className="font-display text-xs font-medium tracking-tight text-[#A1A1AA]">
+            ResumeForge
+          </span>
+          <div className="flex items-center gap-1 text-[#A1A1AA]">
+            <Minus className="w-3 h-3" />
+            <span className="text-label">2026</span>
           </div>
-          <p className="text-silver/30 text-xs" style={{ fontFamily: 'var(--font-body)', fontWeight: 300 }}>
-            Crafted with precision
-          </p>
         </div>
       </footer>
     </div>
