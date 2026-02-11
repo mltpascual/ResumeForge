@@ -1,6 +1,7 @@
 import { useResume } from '@/contexts/ResumeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import MonthPicker from '@/components/MonthPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -50,7 +51,11 @@ export default function CertificationsForm() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <Label>Date</Label>
-                    <Input type="month" value={cert.date} onChange={e => updateCertification(cert.id, 'date', e.target.value)} className="h-11 text-base" />
+                    <MonthPicker
+                      value={cert.date}
+                      onChange={(val) => updateCertification(cert.id, 'date', val)}
+                      placeholder="Select month"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Link (optional)</Label>

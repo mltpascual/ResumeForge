@@ -2,6 +2,7 @@ import { useResume } from '@/contexts/ResumeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import MonthPicker from '@/components/MonthPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -55,11 +56,19 @@ export default function EducationForm() {
                   </div>
                   <div className="space-y-2">
                     <Label>Start Date</Label>
-                    <Input type="month" value={edu.startDate} onChange={e => updateEducation(edu.id, 'startDate', e.target.value)} className="h-11 text-base" />
+                    <MonthPicker
+                      value={edu.startDate}
+                      onChange={(val) => updateEducation(edu.id, 'startDate', val)}
+                      placeholder="Start month"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>End Date</Label>
-                    <Input type="month" value={edu.endDate} onChange={e => updateEducation(edu.id, 'endDate', e.target.value)} className="h-11 text-base" />
+                    <MonthPicker
+                      value={edu.endDate}
+                      onChange={(val) => updateEducation(edu.id, 'endDate', val)}
+                      placeholder="End month"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">

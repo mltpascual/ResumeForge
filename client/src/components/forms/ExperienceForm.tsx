@@ -2,6 +2,7 @@ import { useResume } from '@/contexts/ResumeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import BulletPointEditor from '@/components/BulletPointEditor';
+import MonthPicker from '@/components/MonthPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -74,21 +75,19 @@ export default function ExperienceForm() {
                   </div>
                   <div className="space-y-2">
                     <Label>Start Date</Label>
-                    <Input
-                      type="month"
+                    <MonthPicker
                       value={exp.startDate}
-                      onChange={e => updateExperience(exp.id, 'startDate', e.target.value)}
-                      className="h-11 text-base"
+                      onChange={(val) => updateExperience(exp.id, 'startDate', val)}
+                      placeholder="Start month"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>End Date</Label>
-                    <Input
-                      type="month"
+                    <MonthPicker
                       value={exp.endDate}
-                      onChange={e => updateExperience(exp.id, 'endDate', e.target.value)}
+                      onChange={(val) => updateExperience(exp.id, 'endDate', val)}
+                      placeholder="End month"
                       disabled={exp.current}
-                      className="h-11 text-base"
                     />
                     <div className="flex items-center gap-2 mt-1">
                       <Checkbox

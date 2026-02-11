@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, X, List, AlignLeft, GripVertical } from 'lucide-react';
+import { Plus, X, List, AlignLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BulletPointEditorProps {
@@ -11,11 +11,33 @@ interface BulletPointEditorProps {
   placeholder?: string;
 }
 
-/**
- * Parse a description string into bullet items.
- * Lines starting with "- ", "• ", or "* " are treated as bullets.
- * If no bullet prefix is found, each non-empty line becomes a bullet.
- */
+// Optimal bullet length: 60–120 chars ≈ 1–2 lines on a resume
+const OPTIMAL_MIN = 60;
+const OPTIMAL_MAX = 120;
+const WARNING_MAX = 160;
+
+function getLengthStatus(len: number): { label: string; color: string; bg: string } {
+  if (len === 0) return { label: '', color: 'var(--md3-on-surface-variant)', bg: 'var(--md3-outline-variant)' };
+  if (len < OPTIMAL_MIN) return { label: 'Short', color: 'var(--md3-on-tertiary-container)', bg: 'var(--md3-tertiary-container)' };
+  if (len <= OPTIMAL_MAX) return { label: 'Good', color: 'var(--md3-on-primary-container)', bg: 'var(--md3-primary-container)' };
+  if (len <= WARNING_MAX) return { label: 'Long', color: 'var(--md3-on-tertiary-container)', bg: 'var(--md3-tertiary-container)' };
+  return { label: 'Too long', color: 'var(--md3-on-error-container)', bg: 'var(--md3-error-container)' };
+}
+
+function getProgressPercent(len: number): number {
+  if (len === 0) return 0;
+  // Scale: 0→0%, OPTIMAL_MAX→100%, WARNING_MAX+→100%
+  return Math.min(100, (len / OPTIMAL_MAX) * 100);
+}
+
+function getProgressColor(len: number): string {
+  if (len === 0) return 'var(--md3-outline-variant)';
+  if (len < OPTIMAL_MIN) return 'var(--md3-tertiary)';
+  if (len <= OPTIMAL_MAX) return 'var(--md3-primary)';
+  if (len <= WARNING_MAX) return 'var(--md3-tertiary)';
+  return 'var(--md3-error)';
+}
+
 function parseBullets(text: string): string[] {
   if (!text.trim()) return [''];
   const lines = text.split('\n').filter(l => l.trim());
@@ -24,9 +46,6 @@ function parseBullets(text: string): string[] {
     : [''];
 }
 
-/**
- * Serialize bullet items back to a description string with "- " prefixes.
- */
 function serializeBullets(bullets: string[]): string {
   return bullets
     .filter(b => b.trim())
@@ -36,7 +55,6 @@ function serializeBullets(bullets: string[]): string {
 
 export default function BulletPointEditor({ value, onChange, placeholder }: BulletPointEditorProps) {
   const [mode, setMode] = useState<'bullets' | 'text'>(() => {
-    // Auto-detect: if value has bullet prefixes or multiple lines, start in bullet mode
     if (!value.trim()) return 'bullets';
     const lines = value.split('\n').filter(l => l.trim());
     const hasBullets = lines.some(l => /^[\-\•\*]\s/.test(l));
@@ -47,7 +65,6 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const justAddedRef = useRef(false);
 
-  // Sync bullets when value changes externally (e.g., sample data loaded)
   useEffect(() => {
     const parsed = parseBullets(value);
     const currentSerialized = serializeBullets(bullets);
@@ -56,7 +73,6 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
     }
   }, [value]);
 
-  // Focus the last input when a new bullet is added
   useEffect(() => {
     if (justAddedRef.current) {
       const lastIdx = bullets.length - 1;
@@ -76,11 +92,7 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
 
   const addBullet = useCallback(() => {
     justAddedRef.current = true;
-    setBullets(prev => {
-      const next = [...prev, ''];
-      // Don't serialize yet — empty bullet shouldn't be saved
-      return next;
-    });
+    setBullets(prev => [...prev, '']);
   }, []);
 
   const removeBullet = useCallback((index: number) => {
@@ -107,7 +119,6 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
     } else if (e.key === 'Backspace' && bullets[index] === '' && bullets.length > 1) {
       e.preventDefault();
       removeBullet(index);
-      // Focus previous input
       setTimeout(() => {
         const prevIdx = Math.max(0, index - 1);
         inputRefs.current[prevIdx]?.focus();
@@ -174,52 +185,96 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
           className="text-base min-h-[120px] resize-none"
         />
       ) : (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <AnimatePresence mode="popLayout">
-            {bullets.map((bullet, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.15 }}
-                className="flex items-center gap-1.5 group"
-              >
-                {/* Bullet indicator */}
-                <div
-                  className="flex-shrink-0 size-5 rounded-full flex items-center justify-center text-xs font-medium"
-                  style={{
-                    background: bullet.trim() ? 'var(--md3-primary)' : 'var(--md3-outline-variant)',
-                    color: bullet.trim() ? 'var(--md3-on-primary)' : 'var(--md3-on-surface-variant)',
-                    fontSize: '10px',
-                  }}
-                >
-                  {index + 1}
-                </div>
+            {bullets.map((bullet, index) => {
+              const len = bullet.trim().length;
+              const status = getLengthStatus(len);
+              const progress = getProgressPercent(len);
+              const progressColor = getProgressColor(len);
 
-                {/* Input */}
-                <Input
-                  ref={el => { inputRefs.current[index] = el; }}
-                  value={bullet}
-                  onChange={e => updateBullet(index, e.target.value)}
-                  onKeyDown={e => handleKeyDown(e, index)}
-                  placeholder={index === 0 ? (placeholder || 'Key achievement or responsibility...') : 'Another bullet point...'}
-                  className="h-10 text-sm flex-1"
-                />
-
-                {/* Remove button */}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => removeBullet(index)}
-                  className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                  style={{ width: '28px', height: '28px' }}
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  className="group"
                 >
-                  <X className="size-3.5" />
-                </Button>
-              </motion.div>
-            ))}
+                  <div className="flex items-center gap-1.5">
+                    {/* Bullet number indicator */}
+                    <div
+                      className="flex-shrink-0 size-5 rounded-full flex items-center justify-center text-xs font-medium"
+                      style={{
+                        background: bullet.trim() ? 'var(--md3-primary)' : 'var(--md3-outline-variant)',
+                        color: bullet.trim() ? 'var(--md3-on-primary)' : 'var(--md3-on-surface-variant)',
+                        fontSize: '10px',
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+
+                    {/* Input */}
+                    <Input
+                      ref={el => { inputRefs.current[index] = el; }}
+                      value={bullet}
+                      onChange={e => updateBullet(index, e.target.value)}
+                      onKeyDown={e => handleKeyDown(e, index)}
+                      placeholder={index === 0 ? (placeholder || 'Key achievement or responsibility...') : 'Another bullet point...'}
+                      className="h-10 text-sm flex-1"
+                    />
+
+                    {/* Remove button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => removeBullet(index)}
+                      className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                      style={{ width: '28px', height: '28px' }}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </div>
+
+                  {/* Character count bar — only show when bullet has content */}
+                  {len > 0 && (
+                    <div className="flex items-center gap-2 mt-1 ml-6.5 pl-1">
+                      {/* Progress bar */}
+                      <div
+                        className="flex-1 h-1 rounded-full overflow-hidden"
+                        style={{ background: 'var(--md3-surface-container-highest)', maxWidth: '120px' }}
+                      >
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{
+                            width: `${progress}%`,
+                            background: progressColor,
+                          }}
+                        />
+                      </div>
+
+                      {/* Count + status */}
+                      <span
+                        className="text-xs font-medium tabular-nums"
+                        style={{ color: status.color, fontSize: '10px' }}
+                      >
+                        {len}
+                        {status.label && (
+                          <span
+                            className="ml-1 px-1.5 py-0.5 rounded-full"
+                            style={{ background: status.bg, color: status.color, fontSize: '9px' }}
+                          >
+                            {status.label}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
 
           {/* Add bullet button */}
@@ -237,9 +292,17 @@ export default function BulletPointEditor({ value, onChange, placeholder }: Bull
             Add bullet point
           </Button>
 
-          <p className="text-xs text-muted-foreground" style={{ color: 'var(--md3-on-surface-variant)' }}>
-            Press <kbd className="px-1 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--md3-surface-container-high)' }}>Enter</kbd> to add a new bullet, <kbd className="px-1 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--md3-surface-container-high)' }}>Backspace</kbd> on empty to remove.
-          </p>
+          {/* Helper text */}
+          <div className="flex items-center justify-between">
+            <p className="text-xs" style={{ color: 'var(--md3-on-surface-variant)' }}>
+              <kbd className="px-1 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--md3-surface-container-high)' }}>Enter</kbd> new bullet
+              {' · '}
+              <kbd className="px-1 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--md3-surface-container-high)' }}>Backspace</kbd> remove empty
+            </p>
+            <p className="text-xs" style={{ color: 'var(--md3-on-surface-variant)', fontSize: '10px' }}>
+              Optimal: {OPTIMAL_MIN}–{OPTIMAL_MAX} chars
+            </p>
+          </div>
         </div>
       )}
     </div>
