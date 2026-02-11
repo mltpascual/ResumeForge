@@ -19,21 +19,21 @@ export default function SkillsForm() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex items-end gap-3 bg-white/50 border border-border rounded-md p-3"
+            className="flex items-end gap-3 bg-secondary/30 border border-border rounded-md p-3"
           >
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs tracking-wide uppercase text-warm-gray" style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}>Skill</Label>
+              <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Skill</Label>
               <Input
                 value={skill.name}
                 onChange={(e) => updateSkill(skill.id, 'name', e.target.value)}
                 placeholder="e.g. Figma, React, Project Management"
-                className="bg-white/60 border-border focus:border-terracotta focus:ring-terracotta/20"
+                className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
               />
             </div>
             <div className="w-40 space-y-1.5">
-              <Label className="text-xs tracking-wide uppercase text-warm-gray" style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}>Level</Label>
+              <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Level</Label>
               <Select value={skill.level} onValueChange={(val) => updateSkill(skill.id, 'level', val)}>
-                <SelectTrigger className="bg-white/60 border-border focus:border-terracotta focus:ring-terracotta/20">
+                <SelectTrigger className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -66,7 +66,7 @@ export default function SkillsForm() {
       <Button
         variant="outline"
         onClick={addSkill}
-        className="w-full border-dashed border-terracotta/30 text-terracotta hover:bg-terracotta/5 hover:border-terracotta/50"
+        className="w-full border-dashed border-gold/30 text-gold hover:bg-gold/5 hover:border-gold/50"
       >
         <Plus className="w-4 h-4 mr-2" />
         Add Skill

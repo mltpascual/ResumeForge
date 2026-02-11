@@ -18,12 +18,12 @@ export default function CertificationsForm() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="relative bg-white/50 border border-border rounded-md p-5 space-y-4"
+            className="relative bg-secondary/30 border border-border rounded-md p-5 space-y-4"
           >
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-terracotta" />
-                <span className="text-sm font-medium text-warm-gray" style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic' }}>
+                <Award className="w-4 h-4 text-gold" />
+                <span className="text-sm font-medium text-muted-foreground" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic' }}>
                   Certification {index + 1}
                 </span>
               </div>
@@ -39,42 +39,42 @@ export default function CertificationsForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs tracking-wide uppercase text-warm-gray" style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}>Certification Name</Label>
+                <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Certification Name</Label>
                 <Input
                   value={cert.name}
                   onChange={(e) => updateCertification(cert.id, 'name', e.target.value)}
                   placeholder="Google UX Design Certificate"
-                  className="bg-white/60 border-border focus:border-terracotta focus:ring-terracotta/20"
+                  className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs tracking-wide uppercase text-warm-gray" style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}>Issuing Organization</Label>
+                <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Issuing Organization</Label>
                 <Input
                   value={cert.issuer}
                   onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)}
                   placeholder="Google"
-                  className="bg-white/60 border-border focus:border-terracotta focus:ring-terracotta/20"
+                  className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs tracking-wide uppercase text-warm-gray" style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}>Date</Label>
+                <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Date</Label>
                 <Input
                   value={cert.date}
                   onChange={(e) => updateCertification(cert.id, 'date', e.target.value)}
                   placeholder="2022"
-                  className="bg-white/60 border-border focus:border-terracotta focus:ring-terracotta/20"
+                  className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs tracking-wide uppercase text-warm-gray" style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}>Link (Optional)</Label>
+                <Label className="text-xs tracking-wide uppercase text-muted-foreground" style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>Link (Optional)</Label>
                 <Input
                   value={cert.link}
                   onChange={(e) => updateCertification(cert.id, 'link', e.target.value)}
                   placeholder="https://..."
-                  className="bg-white/60 border-border focus:border-terracotta focus:ring-terracotta/20"
+                  className="bg-secondary/50 border-border focus:border-gold focus:ring-gold/20"
                 />
               </div>
             </div>
@@ -92,7 +92,7 @@ export default function CertificationsForm() {
       <Button
         variant="outline"
         onClick={addCertification}
-        className="w-full border-dashed border-terracotta/30 text-terracotta hover:bg-terracotta/5 hover:border-terracotta/50"
+        className="w-full border-dashed border-gold/30 text-gold hover:bg-gold/5 hover:border-gold/50"
       >
         <Plus className="w-4 h-4 mr-2" />
         Add Certification
