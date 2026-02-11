@@ -13,12 +13,18 @@ import {
   MinimalTemplate,
   TwoColumnTemplate,
 } from '@/components/preview/ResumePreview';
+import {
+  CreativeTemplate,
+  DeveloperTemplate,
+  AcademicTemplate,
+  EleganceTemplate,
+} from '@/components/preview/NewTemplates';
 import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 
 const features = [
   { icon: FileText, title: 'Guided Editor', desc: 'Structured form fields for every resume section. No blank-page anxiety.' },
   { icon: Eye, title: 'Live Preview', desc: 'See changes instantly as you type. What you see is what you export.' },
-  { icon: Layout, title: 'Six Templates', desc: 'Classic, Modern, Executive, Compact, Minimal, and Two Column layouts.' },
+  { icon: Layout, title: 'Ten Templates', desc: 'Classic, Modern, Executive, Creative, Developer, Academic, and more — find your style.' },
   { icon: Download, title: 'PDF Export', desc: 'One-click download. Print-ready, ATS-friendly, pixel-perfect.' },
 ];
 
@@ -29,10 +35,11 @@ const allTemplates = [
   { name: 'Compact', id: 'compact' as TemplateId, Component: CompactTemplate, accent: '#6750A4' },
   { name: 'Minimal', id: 'minimal' as TemplateId, Component: MinimalTemplate, accent: '#6750A4' },
   { name: 'Two Column', id: 'twocolumn' as TemplateId, Component: TwoColumnTemplate, accent: '#6750A4' },
+  { name: 'Creative', id: 'creative' as TemplateId, Component: CreativeTemplate, accent: '#6750A4' },
+  { name: 'Developer', id: 'developer' as TemplateId, Component: DeveloperTemplate, accent: '#6750A4' },
+  { name: 'Academic', id: 'academic' as TemplateId, Component: AcademicTemplate, accent: '#6750A4' },
+  { name: 'Elegance', id: 'elegance' as TemplateId, Component: EleganceTemplate, accent: '#6750A4' },
 ];
-
-// Only show 3 in the homepage grid
-const templateShowcase = allTemplates.slice(0, 3);
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -310,8 +317,7 @@ function TemplateLightbox({
 
             {/* Bottom indicator dots */}
             <div className="flex items-center justify-center gap-2 py-4 pointer-events-auto">
-              {allTemplates.map((t, i) => (
-                <button
+              {allTemplates.map((t, i) => (             <button
                   key={t.id}
                   onClick={() => setCurrentIndex(i)}
                   className="transition-all duration-300 rounded-full"
@@ -382,9 +388,38 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero — Centered Banner */}
-      <section className="py-24 lg:py-36">
-        <div className="container">
+      {/* Hero — Centered Banner with Animated Background */}
+      <section className="py-24 lg:py-36 relative overflow-hidden">
+        {/* Animated floating shapes */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <motion.div
+            animate={{ x: [0, 30, -20, 0], y: [0, -40, 20, 0], rotate: [0, 45, -15, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-[0.07]"
+            style={{ background: 'var(--md3-primary)' }}
+          />
+          <motion.div
+            animate={{ x: [0, -25, 35, 0], y: [0, 30, -25, 0], rotate: [0, -30, 60, 0] }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-1/3 -right-16 w-96 h-96 rounded-full opacity-[0.05]"
+            style={{ background: 'var(--md3-tertiary)' }}
+          />
+          <motion.div
+            animate={{ x: [0, 20, -30, 0], y: [0, -20, 35, 0] }}
+            transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -bottom-10 left-1/4 w-64 h-64 rounded-full opacity-[0.06]"
+            style={{ background: 'var(--md3-secondary)' }}
+          />
+          {/* Subtle grid pattern */}
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle, var(--md3-on-surface) 1px, transparent 1px)`,
+              backgroundSize: '32px 32px',
+            }}
+          />
+        </div>
+        <div className="container relative z-10">
           <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col items-center text-center max-w-3xl mx-auto">
             <motion.div variants={fadeUp} className="mb-6">
               <span
@@ -474,12 +509,12 @@ export default function Home() {
               Templates
             </span>
             <h2 className="font-display text-4xl sm:text-5xl font-medium tracking-tight">
-              Three layouts. Zero noise.
+              Ten layouts. Zero noise.
             </h2>
           </motion.div>
 
-          <div className="grid sm:grid-cols-3 gap-6">
-            {templateShowcase.map((t, i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+            {allTemplates.map((t, i) => (
               <motion.div key={i} variants={fadeUp}>
                 <div className="group">
                   {/* Card with resume preview */}
