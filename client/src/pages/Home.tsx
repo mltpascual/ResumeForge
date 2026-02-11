@@ -3,7 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { DEFAULT_SECTION_ORDER, useResume } from '@/contexts/ResumeContext';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Eye, Layout, Download, ArrowRight, Moon, Sun, Sparkles, X, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, Eye, Layout, Download, ArrowRight, Moon, Sun, Sparkles, X, ZoomIn, ChevronLeft, ChevronRight, Menu, ChevronDown } from 'lucide-react';
 import { sampleResumeData, FONT_PAIRINGS, TemplateId } from '@/types/resume';
 import {
   ClassicTemplate,
@@ -24,8 +24,85 @@ import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 const NAV_SECTIONS = [
   { id: 'features', label: 'Features' },
   { id: 'templates', label: 'Templates' },
+  { id: 'faq', label: 'FAQ' },
   { id: 'get-started', label: 'Get Started' },
 ] as const;
+
+const FAQ_ITEMS = [
+  {
+    q: 'Is ResumeForge really free?',
+    a: 'Yes, completely free. There are no hidden fees, no premium tiers, and no templates behind paywalls. Every feature, template, and export option is available at no cost.',
+  },
+  {
+    q: 'Can I export my resume as a Word document?',
+    a: 'Yes. ResumeForge supports both PDF and DOCX export. Click the export button in the editor toolbar and choose your preferred format.',
+  },
+  {
+    q: 'Is my resume ATS-friendly?',
+    a: 'Absolutely. All templates are designed with ATS compatibility in mind. The built-in ATS Score Checker analyzes your resume against 19 criteria, and the ATS Simulator shows how platforms like Workday, Greenhouse, and Lever would parse your content.',
+  },
+  {
+    q: 'Do I need to create an account?',
+    a: 'No account required. Your data is saved locally in your browser using localStorage. You can start building immediately and your progress is automatically preserved between sessions.',
+  },
+  {
+    q: 'Can I have multiple resume versions?',
+    a: 'Yes. The Resume Profiles feature lets you save and switch between different resume versions — for example, one tailored for frontend roles and another for full-stack positions.',
+  },
+  {
+    q: 'How does the Job Description Matcher work?',
+    a: 'Paste any job posting and the matcher extracts keywords, then compares them against your resume content. It shows your match percentage, highlights found and missing keywords, and provides actionable tips to improve alignment.',
+  },
+  {
+    q: 'Is my data private?',
+    a: 'Yes. All your resume data stays in your browser. Nothing is sent to any server. Your information never leaves your device.',
+  },
+  {
+    q: 'Can I import my LinkedIn profile?',
+    a: 'Yes. Use the LinkedIn Import feature in the editor toolbar. Export your LinkedIn profile as a PDF, then upload it — the parser will auto-fill your resume fields with the extracted data.',
+  },
+];
+
+/** FAQ accordion item */
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="rounded-2xl transition-all duration-300"
+      style={{
+        background: open ? 'var(--md3-surface-container)' : 'var(--md3-surface-container-low)',
+        border: `1px solid ${open ? 'var(--md3-outline-variant)' : 'transparent'}`,
+      }}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-6 py-5 text-left gap-4"
+      >
+        <span className="font-display text-base font-medium" style={{ color: 'var(--md3-on-surface)' }}>{q}</span>
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+          className="flex-shrink-0"
+        >
+          <ChevronDown className="size-5" style={{ color: 'var(--md3-on-surface-variant)' }} />
+        </motion.div>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+            className="overflow-hidden"
+          >
+            <p className="px-6 pb-5 text-sm leading-relaxed" style={{ color: 'var(--md3-on-surface-variant)' }}>{a}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const features = [
   { icon: FileText, title: 'Guided Editor', desc: 'Structured form fields for every resume section. No blank-page anxiety.' },
@@ -368,6 +445,7 @@ export default function Home() {
   }, [setSelectedTemplate, navigate]);
 
   const [activeSection, setActiveSection] = useState<string>('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Track which section is in view for active nav highlighting
   useEffect(() => {
@@ -410,7 +488,7 @@ export default function Home() {
             <span className="font-display text-xl font-medium tracking-tight">ResumeForge</span>
           </button>
           <div className="flex items-center gap-1">
-            {/* Smooth scroll nav links */}
+            {/* Smooth scroll nav links — desktop */}
             <div className="hidden md:flex items-center gap-1 mr-3">
               {NAV_SECTIONS.map(({ id, label }) => (
                 <button
@@ -431,8 +509,18 @@ export default function Home() {
                 {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
               </Button>
             )}
+            {/* Mobile hamburger button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+              className="rounded-full size-10 md:hidden"
+            >
+              <Menu className="size-5" />
+            </Button>
             <Link href="/editor">
-              <Button className="font-display text-sm font-medium rounded-full h-10 px-6 gap-2">
+              <Button className="font-display text-sm font-medium rounded-full h-10 px-6 gap-2 hidden sm:flex">
                 Open Editor
                 <ArrowRight className="size-4" />
               </Button>
@@ -440,6 +528,72 @@ export default function Home() {
           </div>
         </div>
       </nav>
+
+      {/* Mobile slide-out drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Scrim */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
+              className="fixed top-0 right-0 bottom-0 z-[70] w-72 flex flex-col md:hidden"
+              style={{ background: 'var(--md3-surface-container)' }}
+            >
+              {/* Drawer header */}
+              <div className="flex items-center justify-between px-5 h-16" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
+                <span className="font-display text-lg font-medium">Menu</span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="size-10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+              {/* Drawer nav links */}
+              <div className="flex flex-col gap-1 px-3 py-4">
+                {NAV_SECTIONS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setTimeout(() => scrollToSection(id), 100);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-2xl transition-all duration-200 text-left"
+                    style={{
+                      color: activeSection === id ? 'var(--md3-on-secondary-container)' : 'var(--md3-on-surface-variant)',
+                      background: activeSection === id ? 'var(--md3-secondary-container)' : 'transparent',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {/* Drawer CTA */}
+              <div className="mt-auto px-5 pb-6">
+                <Link href="/editor" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full font-display text-sm font-medium rounded-full h-12 gap-2">
+                    Open Editor
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Hero — Centered Banner with Animated Background */}
       <section className="py-24 lg:py-36 relative overflow-hidden">
@@ -626,8 +780,40 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 lg:py-28 scroll-mt-16" style={{ background: 'var(--md3-surface-container-low)' }}>
+        <div className="container">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+          >
+            <motion.div variants={fadeUp} className="mb-4">
+              <span
+                className="inline-flex items-center text-sm font-medium px-4 py-1.5 rounded-full"
+                style={{ background: 'var(--md3-tertiary-container)', color: 'var(--md3-on-tertiary-container)' }}
+              >
+                FAQ
+              </span>
+            </motion.div>
+            <motion.h2 variants={fadeUp} className="font-display text-4xl sm:text-5xl font-medium tracking-tight mb-4">
+              Common questions.
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-lg text-muted-foreground mb-12 max-w-xl leading-relaxed">
+              Everything you need to know about ResumeForge before getting started.
+            </motion.p>
+            <motion.div variants={fadeUp} className="grid md:grid-cols-2 gap-3 max-w-4xl">
+              {FAQ_ITEMS.map((item, i) => (
+                <FAQItem key={i} q={item.q} a={item.a} />
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA — MD3 Filled Tonal Surface */}
-      <section id="get-started" className="py-20 lg:py-28 scroll-mt-16" style={{ background: 'var(--md3-surface-container-low)' }}>
+      <section id="get-started" className="py-20 lg:py-28 scroll-mt-16" style={{ background: 'var(--md3-surface-container)' }}>
         <div className="container">
           <motion.div
             initial="hidden"
