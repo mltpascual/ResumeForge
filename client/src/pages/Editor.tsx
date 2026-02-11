@@ -28,6 +28,7 @@ import DraggableSections from '@/components/DraggableSections';
 import ResumeCompleteness from '@/components/ResumeCompleteness';
 import ATSScoreChecker from '@/components/ATSScoreChecker';
 import JobDescriptionMatcher from '@/components/JobDescriptionMatcher';
+import CoverLetterGenerator from '@/components/CoverLetterGenerator';
 import type { TemplateId } from '@/types/resume';
 
 const INFO_TABS = [
@@ -368,6 +369,8 @@ export default function Editor() {
               </Tooltip>
 
               <JobDescriptionMatcher />
+
+              <CoverLetterGenerator />
 
               <Tooltip>
                 <TooltipTrigger asChild>
