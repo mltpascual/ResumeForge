@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
-import { DEFAULT_SECTION_ORDER } from '@/contexts/ResumeContext';
-import { Link } from 'wouter';
+import { DEFAULT_SECTION_ORDER, useResume } from '@/contexts/ResumeContext';
+import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Eye, Layout, Download, ArrowRight, Moon, Sun, Sparkles, X, ZoomIn } from 'lucide-react';
-import { sampleResumeData, FONT_PAIRINGS } from '@/types/resume';
+import { FileText, Eye, Layout, Download, ArrowRight, Moon, Sun, Sparkles, X, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
+import { sampleResumeData, FONT_PAIRINGS, TemplateId } from '@/types/resume';
 import {
   ClassicTemplate,
   ModernTemplate,
@@ -24,11 +24,17 @@ const features = [
   { icon: Download, title: 'PDF Export', desc: 'One-click download. Print-ready, ATS-friendly, pixel-perfect.' },
 ];
 
-const templateShowcase = [
-  { name: 'Classic', Component: ClassicTemplate, accent: '#6750A4' },
-  { name: 'Modern', Component: ModernTemplate, accent: '#6750A4' },
-  { name: 'Executive', Component: ExecutiveTemplate, accent: '#6750A4' },
+const allTemplates = [
+  { name: 'Classic', id: 'classic' as TemplateId, Component: ClassicTemplate, accent: '#6750A4' },
+  { name: 'Modern', id: 'modern' as TemplateId, Component: ModernTemplate, accent: '#6750A4' },
+  { name: 'Executive', id: 'executive' as TemplateId, Component: ExecutiveTemplate, accent: '#6750A4' },
+  { name: 'Compact', id: 'compact' as TemplateId, Component: CompactTemplate, accent: '#6750A4' },
+  { name: 'Minimal', id: 'minimal' as TemplateId, Component: MinimalTemplate, accent: '#6750A4' },
+  { name: 'Two Column', id: 'twocolumn' as TemplateId, Component: TwoColumnTemplate, accent: '#6750A4' },
 ];
+
+// Only show 3 in the homepage grid
+const templateShowcase = allTemplates.slice(0, 3);
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -105,7 +111,6 @@ function LargeResumePreview({ Component, accent }: { Component: React.ComponentT
     const updateScale = () => {
       if (containerRef.current) {
         const containerHeight = containerRef.current.offsetHeight;
-        // Scale based on available height — A4 height at 96dpi is ~1123px
         const heightScale = containerHeight / 1123;
         const containerWidth = containerRef.current.offsetWidth;
         const widthScale = containerWidth / 793.7;
@@ -162,25 +167,46 @@ function LargeResumePreview({ Component, accent }: { Component: React.ComponentT
   );
 }
 
-/** Lightbox modal for template preview */
+/** Lightbox modal for template preview with navigation */
 function TemplateLightbox({
   isOpen,
   onClose,
-  template,
+  initialIndex,
+  onUseTemplate,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  template: (typeof templateShowcase)[0] | null;
+  initialIndex: number;
+  onUseTemplate: (templateId: TemplateId) => void;
 }) {
-  // Close on Escape key
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  // Sync index when lightbox opens with a new template
+  useEffect(() => {
+    if (isOpen) setCurrentIndex(initialIndex);
+  }, [isOpen, initialIndex]);
+
+  const currentTemplate = allTemplates[currentIndex];
+
+  const goNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % allTemplates.length);
+  }, []);
+
+  const goPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + allTemplates.length) % allTemplates.length);
+  }, []);
+
+  // Keyboard navigation: Escape, ArrowLeft, ArrowRight
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goPrev();
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, goNext, goPrev]);
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -192,32 +218,34 @@ function TemplateLightbox({
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  const handleUseTemplate = useCallback(() => {
+    if (currentTemplate) {
+      onUseTemplate(currentTemplate.id);
+    }
+  }, [currentTemplate, onUseTemplate]);
+
   return (
     <AnimatePresence>
-      {isOpen && template && (
+      {isOpen && currentTemplate && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
           className="fixed inset-0 z-[100] flex flex-col"
-          onClick={onClose}
         >
-          {/* Scrim */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          {/* Scrim — clicking it closes the modal */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-          {/* Modal content */}
-          <div
-            className="relative flex flex-col w-full h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
+          {/* Modal content — does NOT close on click */}
+          <div className="relative flex flex-col w-full h-full pointer-events-none">
             {/* Top bar */}
             <motion.div
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3, delay: 0.05 }}
-              className="flex items-center justify-between px-6 py-4 relative z-10"
+              className="flex items-center justify-between px-6 py-4 relative z-10 pointer-events-auto"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -227,20 +255,18 @@ function TemplateLightbox({
                   <Eye className="size-5" style={{ color: 'var(--md3-on-primary-container)' }} />
                 </div>
                 <div>
-                  <h3 className="font-display text-lg font-medium text-white">{template.name} Template</h3>
-                  <p className="text-sm text-white/60">Preview with sample data</p>
+                  <h3 className="font-display text-lg font-medium text-white">{currentTemplate.name} Template</h3>
+                  <p className="text-sm text-white/60">{currentIndex + 1} of {allTemplates.length} templates</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Link href="/editor">
-                  <Button
-                    className="font-display text-sm font-medium rounded-full h-10 px-6 gap-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Use Template
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
+                <Button
+                  className="font-display text-sm font-medium rounded-full h-10 px-6 gap-2"
+                  onClick={handleUseTemplate}
+                >
+                  Use Template
+                  <ArrowRight className="size-4" />
+                </Button>
                 <button
                   onClick={onClose}
                   className="size-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors duration-200"
@@ -251,19 +277,58 @@ function TemplateLightbox({
               </div>
             </motion.div>
 
-            {/* Resume preview area */}
+            {/* Resume preview area with side navigation arrows */}
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.92 }}
               transition={{ duration: 0.35, delay: 0.08, ease: [0.05, 0.7, 0.1, 1] }}
-              className="flex-1 min-h-0"
-              onClick={onClose}
+              className="flex-1 min-h-0 flex items-center justify-center relative"
             >
-              <div className="w-full h-full" onClick={(e) => e.stopPropagation()}>
-                <LargeResumePreview Component={template.Component} accent={template.accent} />
+              {/* Left arrow */}
+              <button
+                onClick={goPrev}
+                className="absolute left-4 z-20 size-12 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/25 transition-colors duration-200 pointer-events-auto"
+                aria-label="Previous template"
+              >
+                <ChevronLeft className="size-6 text-white" />
+              </button>
+
+              {/* Resume paper — clicking outside it (on the scrim) closes the modal */}
+              <div className="w-full h-full pointer-events-auto" onClick={onClose}>
+                <div onClick={(e) => e.stopPropagation()} className="w-full h-full">
+                  <LargeResumePreview Component={currentTemplate.Component} accent={currentTemplate.accent} />
+                </div>
               </div>
+
+              {/* Right arrow */}
+              <button
+                onClick={goNext}
+                className="absolute right-4 z-20 size-12 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/25 transition-colors duration-200 pointer-events-auto"
+                aria-label="Next template"
+              >
+                <ChevronRight className="size-6 text-white" />
+              </button>
             </motion.div>
+
+            {/* Bottom indicator dots */}
+            <div className="flex items-center justify-center gap-2 py-4 pointer-events-auto">
+              {allTemplates.map((t, i) => (
+                <button
+                  key={t.id}
+                  onClick={() => setCurrentIndex(i)}
+                  className="transition-all duration-300 rounded-full"
+                  style={{
+                    width: i === currentIndex ? '24px' : '8px',
+                    height: '8px',
+                    background: i === currentIndex
+                      ? 'var(--md3-primary)'
+                      : 'rgba(255,255,255,0.35)',
+                  }}
+                  aria-label={`View ${t.name} template`}
+                />
+              ))}
+            </div>
           </div>
         </motion.div>
       )}
@@ -273,17 +338,25 @@ function TemplateLightbox({
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
-  const [previewTemplate, setPreviewTemplate] = useState<(typeof templateShowcase)[0] | null>(null);
+  const { setSelectedTemplate } = useResume();
+  const [, navigate] = useLocation();
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  const openPreview = useCallback((template: (typeof templateShowcase)[0]) => {
-    setPreviewTemplate(template);
+  const openPreview = useCallback((index: number) => {
+    setLightboxIndex(index);
     setLightboxOpen(true);
   }, []);
 
   const closePreview = useCallback(() => {
     setLightboxOpen(false);
   }, []);
+
+  const handleUseTemplate = useCallback((templateId: TemplateId) => {
+    setSelectedTemplate(templateId);
+    setLightboxOpen(false);
+    navigate('/editor');
+  }, [setSelectedTemplate, navigate]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -436,7 +509,7 @@ export default function Home() {
                     {/* Overlay with Preview button — appears on hover */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <button
-                        onClick={() => openPreview(t)}
+                        onClick={() => openPreview(i)}
                         className="flex items-center gap-2 px-6 py-3 rounded-full font-display text-sm font-medium text-white transition-all duration-300 transform scale-90 group-hover:scale-100"
                         style={{
                           background: 'var(--md3-primary)',
@@ -461,17 +534,16 @@ export default function Home() {
                       </span>
                       <span className="font-display text-lg font-medium">{t.name}</span>
                     </div>
-                    <Link href="/editor">
-                      <span
-                        className="text-xs font-display font-medium px-3 py-1.5 rounded-full transition-colors duration-200 cursor-pointer"
-                        style={{
-                          background: 'var(--md3-secondary-container)',
-                          color: 'var(--md3-on-secondary-container)',
-                        }}
-                      >
-                        Use template
-                      </span>
-                    </Link>
+                    <span
+                      className="text-xs font-display font-medium px-3 py-1.5 rounded-full transition-colors duration-200 cursor-pointer"
+                      style={{
+                        background: 'var(--md3-secondary-container)',
+                        color: 'var(--md3-on-secondary-container)',
+                      }}
+                      onClick={() => handleUseTemplate(t.id)}
+                    >
+                      Use template
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -533,7 +605,8 @@ export default function Home() {
       <TemplateLightbox
         isOpen={lightboxOpen}
         onClose={closePreview}
-        template={previewTemplate}
+        initialIndex={lightboxIndex}
+        onUseTemplate={handleUseTemplate}
       />
     </div>
   );
