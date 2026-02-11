@@ -2,8 +2,8 @@ import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { DEFAULT_SECTION_ORDER } from '@/contexts/ResumeContext';
 import { Link } from 'wouter';
-import { motion } from 'framer-motion';
-import { FileText, Eye, Layout, Download, ArrowRight, Moon, Sun, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileText, Eye, Layout, Download, ArrowRight, Moon, Sun, Sparkles, X, ZoomIn } from 'lucide-react';
 import { sampleResumeData, FONT_PAIRINGS } from '@/types/resume';
 import {
   ClassicTemplate,
@@ -13,7 +13,7 @@ import {
   MinimalTemplate,
   TwoColumnTemplate,
 } from '@/components/preview/ResumePreview';
-import { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 
 const HERO_IMG = 'https://private-us-east-1.manuscdn.com/sessionFile/5FIQ5XegK0rCC6t0RHeSVu/sandbox/E3e72YchZqpeCDdxOT6OO0-img-1_1770772003000_na1fn_bWluaW1hbC1oZXJv.jpg?x-oss-process=image/resize,w_1920,h_1920/format,webp/quality,q_80&Expires=1798761600&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvNUZJUTVYZWdLMHJDQzZ0MFJIZVNWdS9zYW5kYm94L0UzZTcyWWNoWnFwZUNEZHhPVDZPTzAtaW1nLTFfMTc3MDc3MjAwMzAwMF9uYTFmbl9iV2x1YVcxaGJDMW9aWEp2LmpwZz94LW9zcy1wcm9jZXNzPWltYWdlL3Jlc2l6ZSx3XzE5MjAsaF8xOTIwL2Zvcm1hdCx3ZWJwL3F1YWxpdHkscV84MCIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5ODc2MTYwMH19fV19&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=QPdvUtpnctFjUTYZkzQGjIvZUYs0I6q67CI6x7GLiJ7PtLnaxRLCIRwHbYtHz3CvE6UKBe5ZBudN0zAGYg8bTHrEJeYk1Q0nYOg5I09wMcS58Nw9VzsQyFBIqPiG7etbVLbUh~t7TBjuPQkgTJJtR-4Xaa7XCzLjKYqOtGvzkt~fGi4irS0Sw33Z2VL3Br6fQeDfOh8F5aMJS0Rm53oml-cMflhTlI3nxAjzGgjFzKIwVnHQS49fPgkC9aN1lA1ofneUhzu5Tp7g4JI7iQoYrsn774iJ3tD6CZrT0JW9~Kpts60PdrgjLmvJn~1lXPpin~DZXaazraMuaVu6ORUzKg__';
 
@@ -50,7 +50,6 @@ function MiniResumePreview({ Component, accent }: { Component: React.ComponentTy
     const updateScale = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
-        // A4 width at 96dpi is ~793.7px
         setScale(containerWidth / 793.7);
       }
     };
@@ -95,8 +94,196 @@ function MiniResumePreview({ Component, accent }: { Component: React.ComponentTy
   );
 }
 
+/** Large resume preview for the lightbox modal */
+function LargeResumePreview({ Component, accent }: { Component: React.ComponentType<any>; accent: string }) {
+  const defaultFont = useMemo(() => FONT_PAIRINGS[0], []);
+  const sectionOrder = useMemo(() => DEFAULT_SECTION_ORDER, []);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.6);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerHeight = containerRef.current.offsetHeight;
+        // Scale based on available height — A4 height at 96dpi is ~1123px
+        const heightScale = containerHeight / 1123;
+        const containerWidth = containerRef.current.offsetWidth;
+        const widthScale = containerWidth / 793.7;
+        setScale(Math.min(heightScale, widthScale));
+      }
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full h-full flex items-start justify-center overflow-auto"
+      style={{ padding: '16px' }}
+    >
+      <div
+        style={{
+          width: `${793.7 * scale}px`,
+          height: `${1123 * scale}px`,
+          flexShrink: 0,
+          position: 'relative',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div
+          style={{
+            width: '210mm',
+            minHeight: '297mm',
+            backgroundColor: '#ffffff',
+            transformOrigin: 'top left',
+            transform: `scale(${scale})`,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <Component
+            data={sampleResumeData}
+            sectionOrder={sectionOrder}
+            accent={accent}
+            font={defaultFont}
+            fontSize={1}
+            lineSpacing={1}
+            marginSize={1}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Lightbox modal for template preview */
+function TemplateLightbox({
+  isOpen,
+  onClose,
+  template,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  template: (typeof templateShowcase)[0] | null;
+}) {
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && template && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+          className="fixed inset-0 z-[100] flex flex-col"
+          onClick={onClose}
+        >
+          {/* Scrim */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+          {/* Modal content */}
+          <div
+            className="relative flex flex-col w-full h-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top bar */}
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+              className="flex items-center justify-between px-6 py-4 relative z-10"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="size-10 rounded-xl flex items-center justify-center"
+                  style={{ background: 'var(--md3-primary-container)' }}
+                >
+                  <Eye className="size-5" style={{ color: 'var(--md3-on-primary-container)' }} />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-medium text-white">{template.name} Template</h3>
+                  <p className="text-sm text-white/60">Preview with sample data</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link href="/editor">
+                  <Button
+                    className="font-display text-sm font-medium rounded-full h-10 px-6 gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Use Template
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+                <button
+                  onClick={onClose}
+                  className="size-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors duration-200"
+                  aria-label="Close preview"
+                >
+                  <X className="size-5 text-white" />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Resume preview area */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.35, delay: 0.08, ease: [0.05, 0.7, 0.1, 1] }}
+              className="flex-1 min-h-0"
+              onClick={onClose}
+            >
+              <div className="w-full h-full" onClick={(e) => e.stopPropagation()}>
+                <LargeResumePreview Component={template.Component} accent={template.accent} />
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
+  const [previewTemplate, setPreviewTemplate] = useState<(typeof templateShowcase)[0] | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const openPreview = useCallback((template: (typeof templateShowcase)[0]) => {
+    setPreviewTemplate(template);
+    setLightboxOpen(true);
+  }, []);
+
+  const closePreview = useCallback(() => {
+    setLightboxOpen(false);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -212,7 +399,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Templates — Live Resume Previews */}
+      {/* Templates — Live Resume Previews with Preview Button */}
       <section className="container py-20 lg:py-28">
         <motion.div
           initial="hidden"
@@ -235,29 +422,58 @@ export default function Home() {
           <div className="grid sm:grid-cols-3 gap-6">
             {templateShowcase.map((t, i) => (
               <motion.div key={i} variants={fadeUp}>
-                <Link href="/editor">
-                  <div className="group cursor-pointer">
-                    <div
-                      className="rounded-2xl overflow-hidden mb-4 md3-elevation-1 template-card will-change-transform"
-                      style={{
-                        background: 'var(--md3-surface-container)',
-                        border: '1px solid var(--md3-outline-variant)',
-                      }}
-                    >
-                      <MiniResumePreview Component={t.Component} accent={t.accent} />
+                <div className="group">
+                  {/* Card with resume preview */}
+                  <div
+                    className="rounded-2xl overflow-hidden mb-4 md3-elevation-1 relative transition-shadow duration-300 hover:shadow-lg"
+                    style={{
+                      background: 'var(--md3-surface-container)',
+                      border: '1px solid var(--md3-outline-variant)',
+                    }}
+                  >
+                    <MiniResumePreview Component={t.Component} accent={t.accent} />
+
+                    {/* Overlay with Preview button — appears on hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <button
+                        onClick={() => openPreview(t)}
+                        className="flex items-center gap-2 px-6 py-3 rounded-full font-display text-sm font-medium text-white transition-all duration-300 transform scale-90 group-hover:scale-100"
+                        style={{
+                          background: 'var(--md3-primary)',
+                          color: 'var(--md3-on-primary)',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                        }}
+                      >
+                        <ZoomIn className="size-4" />
+                        Preview
+                      </button>
                     </div>
-                    <div className="flex items-center gap-3 transition-transform duration-500 ease-out group-hover:translate-x-1">
+                  </div>
+
+                  {/* Label row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       <span
-                        className="text-xs font-mono-accent px-2 py-0.5 rounded-md transition-colors duration-300"
+                        className="text-xs font-mono-accent px-2 py-0.5 rounded-md"
                         style={{ background: 'var(--md3-surface-container-high)', color: 'var(--md3-on-surface-variant)' }}
                       >
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       <span className="font-display text-lg font-medium">{t.name}</span>
-                      <ArrowRight className="size-4 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" style={{ color: 'var(--md3-primary)' }} />
                     </div>
+                    <Link href="/editor">
+                      <span
+                        className="text-xs font-display font-medium px-3 py-1.5 rounded-full transition-colors duration-200 cursor-pointer"
+                        style={{
+                          background: 'var(--md3-secondary-container)',
+                          color: 'var(--md3-on-secondary-container)',
+                        }}
+                      >
+                        Use template
+                      </span>
+                    </Link>
                   </div>
-                </Link>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -312,6 +528,13 @@ export default function Home() {
           <span className="text-sm text-muted-foreground">Built with Material Design 3.</span>
         </div>
       </footer>
+
+      {/* Template Preview Lightbox */}
+      <TemplateLightbox
+        isOpen={lightboxOpen}
+        onClose={closePreview}
+        template={previewTemplate}
+      />
     </div>
   );
 }
