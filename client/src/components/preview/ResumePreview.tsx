@@ -220,7 +220,7 @@ function ModernTemplate({ data, sectionOrder, accent, font }: TemplateProps) {
   };
 
   return (
-    <div style={{ fontFamily: font.body, color: colors.black, display: 'flex', minHeight: '100%' }}>
+    <div style={{ fontFamily: font.body, color: colors.black, display: 'flex' }}>
       <div style={{ width: '35%', backgroundColor: sidebarBg, color: sidebarText, padding: '36px 22px' }}>
         <h1 style={{ fontFamily: font.heading, fontSize: '22px', fontWeight: 700, marginBottom: '2px', color: sidebarText, letterSpacing: '-0.03em' }}>
           {personalInfo.fullName || 'Your Name'}
@@ -787,7 +787,6 @@ const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
       id="resume-preview"
       style={{
         width: '210mm',
-        minHeight: '297mm',
         backgroundColor: '#ffffff',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
         transformOrigin: 'top left',
