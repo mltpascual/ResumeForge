@@ -39,7 +39,7 @@ function sz(base: number, scale: number): string {
   return `${(base * scale).toFixed(1)}px`;
 }
 
-interface TemplateProps {
+export interface TemplateProps {
   data: ResumeData;
   sectionOrder: SectionId[];
   accent: string;
@@ -220,7 +220,7 @@ function renderOrderedSections(data: ResumeData, order: SectionId[], colors: Sec
 }
 
 // ============ 1. CLASSIC TEMPLATE ============
-function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
+export function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -259,7 +259,7 @@ function ClassicTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineS
 }
 
 // ============ 2. MODERN TEMPLATE ============
-function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
+export function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -386,7 +386,7 @@ function ModernTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSp
 }
 
 // ============ 3. EXECUTIVE TEMPLATE ============
-function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
+export function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -522,7 +522,7 @@ function ExecutiveTemplate({ data, sectionOrder, accent, font, fontSize: fs, lin
 }
 
 // ============ 4. COMPACT TEMPLATE ============
-function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
+export function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -643,7 +643,7 @@ function CompactTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineS
 }
 
 // ============ 5. MINIMAL TEMPLATE ============
-function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
+export function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
@@ -685,7 +685,7 @@ function MinimalTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineS
 }
 
 // ============ 6. TWO COLUMN TEMPLATE ============
-function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
+export function TwoColumnTemplate({ data, sectionOrder, accent, font, fontSize: fs, lineSpacing: ls, marginSize: ms }: TemplateProps) {
   const { personalInfo } = data;
   if (!(personalInfo.fullName || data.experiences.length > 0 || data.education.length > 0)) return emptyState;
 
