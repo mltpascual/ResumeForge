@@ -29,6 +29,13 @@ import ResumeCompleteness from '@/components/ResumeCompleteness';
 import ATSScoreChecker from '@/components/ATSScoreChecker';
 import JobDescriptionMatcher from '@/components/JobDescriptionMatcher';
 import CoverLetterGenerator from '@/components/CoverLetterGenerator';
+import KeyboardShortcuts from '@/components/KeyboardShortcuts';
+import OnboardingTour from '@/components/OnboardingTour';
+import LinkedInImport from '@/components/LinkedInImport';
+import ResumeProfiles from '@/components/ResumeProfiles';
+import DocxExport from '@/components/DocxExport';
+import WordCount from '@/components/WordCount';
+import SectionTips from '@/components/SectionTips';
 import type { TemplateId } from '@/types/resume';
 
 const INFO_TABS = [
@@ -78,6 +85,10 @@ const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
   { id: 'compact', label: 'Compact', desc: 'Dense, space-efficient layout' },
   { id: 'minimal', label: 'Minimal', desc: 'Clean and understated' },
   { id: 'twocolumn', label: 'Two Column', desc: 'Balanced two-column split' },
+  { id: 'creative', label: 'Creative', desc: 'Bold colorful header with playful style' },
+  { id: 'developer', label: 'Developer', desc: 'Terminal-inspired dark theme' },
+  { id: 'academic', label: 'Academic', desc: 'Formal serif layout for CV/academia' },
+  { id: 'elegance', label: 'Elegance', desc: 'Refined minimal with subtle accents' },
 ];
 
 const PRESET_COLORS = [
@@ -368,9 +379,17 @@ export default function Editor() {
                 <TooltipContent>Print (Ctrl+P)</TooltipContent>
               </Tooltip>
 
-              <JobDescriptionMatcher />
+              <LinkedInImport />
 
-              <CoverLetterGenerator />
+              <ResumeProfiles />
+
+              <DocxExport />
+
+              <div className="w-px h-6 mx-1" style={{ background: 'var(--md3-outline-variant)' }} />
+
+              <span data-tour="job-matcher"><JobDescriptionMatcher /></span>
+
+              <span data-tour="cover-letter"><CoverLetterGenerator /></span>
 
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -383,6 +402,7 @@ export default function Editor() {
 
               {/* MD3 Filled Button for Export */}
               <Button
+                data-tour="export"
                 onClick={handleExportPDF}
                 disabled={exporting}
                 className="gap-2 h-10 text-sm font-display font-medium rounded-full px-5 ml-1"
@@ -419,7 +439,7 @@ export default function Editor() {
             <Tabs value={activeSection} onValueChange={setActiveSection} className="flex flex-col h-full overflow-hidden">
               {/* MD3 Navigation Tabs with animated underline */}
               <div className="shrink-0 overflow-x-auto px-3 pt-2 pb-2" style={{ borderBottom: '1px solid var(--md3-outline-variant)' }}>
-                <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start">
+                <TabsList className="w-full h-auto flex-wrap gap-1 bg-transparent p-0 justify-start" data-tour="tabs">
                   {INFO_TABS.map(tab => (
                     <TabPill
                       key={tab.value}
@@ -433,14 +453,14 @@ export default function Editor() {
                     <div className="w-px h-4" style={{ background: 'var(--md3-outline-variant)' }} />
                   </div>
 
-                  {DESIGN_TABS.map(tab => (
+                  <span data-tour="design-tabs" className="contents">{DESIGN_TABS.map(tab => (
                     <TabPill
                       key={tab.value}
                       tab={tab}
                       variant="design"
                       isActive={activeSection === tab.value}
                     />
-                  ))}
+                  ))}</span>
                 </TabsList>
               </div>
 
@@ -454,21 +474,27 @@ export default function Editor() {
                   <div className="p-5 lg:p-6">
                     {/* Info tab contents */}
                     <TabsContent value="personal" className="mt-0">
+                      <SectionTips section="personal" />
                       <PersonalInfoForm />
                     </TabsContent>
                     <TabsContent value="experience" className="mt-0">
+                      <SectionTips section="experience" />
                       <ExperienceForm />
                     </TabsContent>
                     <TabsContent value="education" className="mt-0">
+                      <SectionTips section="education" />
                       <EducationForm />
                     </TabsContent>
                     <TabsContent value="skills" className="mt-0">
+                      <SectionTips section="skills" />
                       <SkillsForm />
                     </TabsContent>
                     <TabsContent value="projects" className="mt-0">
+                      <SectionTips section="projects" />
                       <ProjectsForm />
                     </TabsContent>
                     <TabsContent value="certifications" className="mt-0">
+                      <SectionTips section="certifications" />
                       <CertificationsForm />
                     </TabsContent>
                     <TabsContent value="order" className="mt-0">
@@ -717,6 +743,40 @@ export default function Editor() {
                         <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
 
                         <div>
+                          <Label className="text-xs font-display font-medium mb-2 block">Industry Palettes</Label>
+                          <div className="space-y-2">
+                            {[
+                              { name: 'Finance', colors: ['#1E3A5F', '#0F4C75', '#2C3E50', '#1B4332'] },
+                              { name: 'Tech', colors: ['#6750A4', '#1E40AF', '#7C3AED', '#0EA5E9'] },
+                              { name: 'Creative', colors: ['#BE185D', '#DB2777', '#EC4899', '#F472B6'] },
+                              { name: 'Healthcare', colors: ['#0F766E', '#15803D', '#059669', '#0D9488'] },
+                              { name: 'Legal', colors: ['#1C1917', '#44403C', '#78716C', '#292524'] },
+                              { name: 'Education', colors: ['#1E40AF', '#1D4ED8', '#2563EB', '#3B82F6'] },
+                            ].map(palette => (
+                              <div key={palette.name} className="flex items-center gap-2">
+                                <span className="text-[11px] font-medium w-16 shrink-0 text-muted-foreground">{palette.name}</span>
+                                <div className="flex gap-1.5">
+                                  {palette.colors.map(c => (
+                                    <button
+                                      key={c}
+                                      onClick={() => setAccentColor(c)}
+                                      className="size-7 rounded-lg transition-all hover:scale-110"
+                                      style={{
+                                        backgroundColor: c,
+                                        border: accentColor === c ? '2px solid var(--foreground)' : '1px solid transparent',
+                                        boxShadow: accentColor === c ? '0 0 0 1px var(--background)' : 'none',
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="h-px" style={{ background: 'var(--md3-outline-variant)' }} />
+
+                        <div>
                           <Label className="text-xs font-display font-medium mb-2 block">Custom Color</Label>
                           <div className="flex items-center gap-3">
                             <Input
@@ -778,21 +838,25 @@ export default function Editor() {
 
               {/* Auto-save indicator + completeness score */}
               <div className="px-5 py-2.5 flex items-center justify-between shrink-0" style={{ borderTop: '1px solid var(--md3-outline-variant)', background: 'var(--md3-surface-container-low)' }}>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Save className="size-3.5" />
-                  <span className="font-medium">Auto-saved to browser</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Save className="size-3.5" />
+                    <span className="font-medium">Auto-saved</span>
+                  </div>
+                  <div className="w-px h-4" style={{ background: 'var(--md3-outline-variant)' }} />
+                  <WordCount />
                 </div>
                 <div className="flex items-center gap-4">
                   <ResumeCompleteness />
                   <div className="w-px h-4" style={{ background: 'var(--md3-outline-variant)' }} />
-                  <ATSScoreChecker />
+                  <span data-tour="ats-score"><ATSScoreChecker /></span>
                 </div>
               </div>
             </Tabs>
           </div>
 
           {/* Right: Preview */}
-          <div className={`flex-1 flex flex-col overflow-hidden ${showPreview ? 'flex' : 'hidden lg:flex'} print:block print:bg-white`} style={{ background: 'var(--md3-surface-container)' }}>
+          <div data-tour="preview" className={`flex-1 flex flex-col overflow-hidden ${showPreview ? 'flex' : 'hidden lg:flex'} print:block print:bg-white`} style={{ background: 'var(--md3-surface-container)' }}>
             {/* Preview toolbar */}
             <div className="px-4 py-2.5 flex items-center justify-between shrink-0 print:hidden" style={{ borderBottom: '1px solid var(--md3-outline-variant)', background: 'var(--md3-surface-container-low)' }}>
               <div className="flex items-center gap-2">
@@ -889,6 +953,9 @@ export default function Editor() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <KeyboardShortcuts />
+      <OnboardingTour />
     </>
   );
 }

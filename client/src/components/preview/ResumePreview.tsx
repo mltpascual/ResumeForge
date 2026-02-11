@@ -7,6 +7,7 @@
  */
 
 import { useResume, type SectionId } from '@/contexts/ResumeContext';
+import { CreativeTemplate, DeveloperTemplate, AcademicTemplate, EleganceTemplate } from './NewTemplates';
 import { type ResumeData, type TemplateId, type FontPairing, FONT_PAIRINGS } from '@/types/resume';
 import { forwardRef } from 'react';
 
@@ -834,6 +835,10 @@ const ResumePreview = forwardRef<HTMLDivElement>((_, ref) => {
     compact: CompactTemplate,
     minimal: MinimalTemplate,
     twocolumn: TwoColumnTemplate,
+    creative: CreativeTemplate,
+    developer: DeveloperTemplate,
+    academic: AcademicTemplate,
+    elegance: EleganceTemplate,
   };
 
   const Template = templates[selectedTemplate];

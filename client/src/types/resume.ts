@@ -56,7 +56,7 @@ export interface ResumeData {
   certifications: Certification[];
 }
 
-export type TemplateId = 'classic' | 'modern' | 'executive' | 'compact' | 'minimal' | 'twocolumn';
+export type TemplateId = 'classic' | 'modern' | 'executive' | 'compact' | 'minimal' | 'twocolumn' | 'creative' | 'developer' | 'academic' | 'elegance';
 
 export interface FontPairing {
   id: string;
