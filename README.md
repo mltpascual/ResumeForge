@@ -198,6 +198,19 @@ resume-maker/
 ├── tsconfig.json                     # TypeScript configuration
 ├── package.json                      # Dependencies and scripts
 ├── DESIGN.md                         # Design system documentation
+├── DEVELOPMENT_GUIDELINES.md         # Coding standards & best practices
+├── C4-Documentation/                 # C4 architecture documentation
+│   ├── README.md                     # Documentation index
+│   ├── c4-context.md                 # System context & personas
+│   ├── c4-container.md               # Technology & deployment
+│   └── c4-component.md               # Component catalog & relationships
+├── conductor/                        # Project context & workflow docs
+│   ├── index.md                      # Navigation hub
+│   ├── product.md                    # Product vision & features
+│   ├── tech-stack.md                 # Technology decisions
+│   ├── workflow.md                   # Development workflow
+│   ├── product-guidelines.md         # Product guidelines
+│   └── code_styleguides/             # Language-specific style guides
 └── README.md                         # This file
 ```
 
@@ -289,6 +302,19 @@ Internet Explorer is not supported.
 The production build generates approximately 2.5 MB of JavaScript (400 KB gzipped) across code-split chunks. Key libraries like jsPDF and html2canvas are loaded on demand when the user triggers an export. Google Fonts are loaded asynchronously via `preconnect` hints in the HTML head.
 
 Static assets (JS, CSS, fonts) are served with `Cache-Control: public, max-age=31536000, immutable` headers via the Vercel configuration, ensuring repeat visits load instantly from cache.
+
+---
+
+## Documentation
+
+The project includes comprehensive documentation across multiple formats:
+
+| Document | Purpose |
+|---|---|
+| [DESIGN.md](DESIGN.md) | Full design system — colors, typography, spacing, motion, components |
+| [DEVELOPMENT_GUIDELINES.md](DEVELOPMENT_GUIDELINES.md) | Coding standards, security, testing, and UI/UX best practices |
+| [C4-Documentation/](C4-Documentation/) | C4 architecture diagrams — Context, Container, and Component levels |
+| [conductor/](conductor/) | Product vision, tech stack decisions, workflow, and style guides |
 
 ---
 

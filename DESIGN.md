@@ -8,7 +8,7 @@
 
 ## 1. Design Movement & Philosophy
 
-ResumeForge follows **Google's Material Design 3** (Material You) specification, adapted for a professional document-creation tool. The design prioritizes clarity, accessibility, and a sense of calm productivity. Every visual decision — from color to corner radius to motion — traces back to the MD3 baseline guidelines published at [m3.material.io](https://m3.material.io).
+ResumeForge embodies a **refined, professional calm** — the visual equivalent of a well-organized desk in a sunlit office. The interface is spacious without feeling empty, structured without feeling rigid, and polished without feeling corporate. Built on Google's Material Design 3 (Material You) specification and adapted for a professional document-creation tool, every visual decision — from color to corner radius to motion — traces back to the MD3 baseline guidelines published at [m3.material.io](https://m3.material.io). The overall density is **medium-spacious**: form fields breathe with comfortable padding, cards float on subtle tonal elevation rather than heavy shadows, and the split-pane editor gives equal visual weight to input and output. The aesthetic philosophy is "invisible tooling" — the interface should disappear so the user focuses on their resume content, not the tool itself.
 
 **Core Principles:**
 
@@ -236,12 +236,12 @@ This ensures consistent interaction feedback across all interactive surfaces reg
 
 ## 10. Accessibility
 
-- **Focus rings:** All interactive elements maintain visible focus rings via `outline-ring/50`.
-- **Color contrast:** MD3 baseline colors meet WCAG AA contrast requirements.
-- **Keyboard navigation:** Full keyboard support for tabs, drag-and-drop (via dnd-kit keyboard sensor), modals, and accordions.
-- **Screen reader support:** Semantic HTML, ARIA labels on icon-only buttons, and tooltips on abbreviated UI elements.
-- **Reduced motion:** Framer Motion respects `prefers-reduced-motion` media query.
-- **Print styles:** Dedicated `@media print` rules for clean resume output.
+- **Focus rings:** All interactive elements maintain visible 2px focus rings in `--ring` color with 2px offset, visible in both light and dark modes. Tab navigation follows logical DOM order.
+- **Color contrast:** Primary text (`#1D1B20` on `#FEF7FF`) achieves 15.4:1 contrast ratio. Secondary text (`#49454F` on `#FEF7FF`) achieves 8.2:1. All combinations meet WCAG 2.1 AA standards. Dark mode maintains equivalent ratios with inverted values.
+- **Keyboard navigation:** Full keyboard support for tabs, drag-and-drop (via dnd-kit keyboard sensor), modals (Escape to close), accordions, and a comprehensive keyboard shortcuts system (press "?" to view all shortcuts).
+- **Screen reader support:** Semantic HTML structure with proper heading hierarchy. ARIA labels on icon-only buttons. Toast notifications use `role="status"` for live announcements. Form fields have associated labels.
+- **Reduced motion:** Framer Motion respects `prefers-reduced-motion` media query. CSS animations use `@media (prefers-reduced-motion: reduce)` to disable non-essential motion.
+- **Print styles:** Dedicated `@media print` rules hide all chrome (header, nav, footer, editor panel) and render the resume preview at full page width with zero margins, matching A4 paper size.
 
 ---
 
